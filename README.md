@@ -29,4 +29,5 @@ Bug reported https://github.com/ffmpegwasm/ffmpeg.wasm/issues/144
 * Add pre-fill input for Title, SubTitle, Genre etc
 * Add ability to select a folder to apply filter too
 * Implement saving data to IndexedDB
+* Once the data is saved can implement rescanning for files that failed to be read by FFmpeg
 * Grab details file details from other sources as addition/alternative to FFmpeg when it fails
