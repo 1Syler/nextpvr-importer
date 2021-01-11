@@ -21,3 +21,5 @@ Header set Cross-Origin-Embedder-Policy: require-corp
 Unfortunately, when running it on > 20 files for me, Firefox consumes all of my RAM and crahes.
 
 On Chrome it will run through all files and add them to the list but it may have problems reading some files which will leave the startTime and endTime as null, for now. It seems to be an issue with FFmpeg as it can read the files on their own but not when run as part of a much larger number of files. I will file a bug for this.
+
+Bug reported https://github.com/ffmpegwasm/ffmpeg.wasm/issues/144
