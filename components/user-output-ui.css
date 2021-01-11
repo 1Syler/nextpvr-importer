@@ -1,0 +1,63 @@
+#user-output h4 {
+    margin-bottom: 0;
+    font-size: 1rem;
+}
+
+#user-output .panel-group {
+    margin-bottom: 0;
+    border: none;
+}
+
+#user-output .panel-group .panel {
+    border-right: none;
+    border-left: none;
+}
+
+#user-output .panel-group .panel+.panel {
+    margin-top: 0;
+}
+
+#user-output .file-ui-panel {
+    margin-bottom: 1px;
+    border-bottom: none;
+}
+
+#user-output .file-ui-panel .fail-status {
+    margin-bottom: .5rem;
+}
+
+#user-output .panel-default>.panel-heading {
+    color: white;
+    background-color: black;
+    margin-bottom: 1px;
+    padding: 0 15px;
+}
+
+#user-output .panel-default>.panel-heading .badge {
+    margin: 5px 0;
+    /*color: black;*/
+    background-color: #FFE9A2;
+}
+
+#user-output .panel-title>span .adjust-position {
+    position: relative;
+    top: 2px;
+}
+
+#user-output .panel-title>span .adjust-position-arrow {
+    position: relative;
+    top: 5px;
+}
+
+#user-output .adjust-panel-heading {
+    width: 100%;
+    display: inline-block;
+}
+
+#user-output .fa-folder {
+    color: #FFE9A2;
+}
+
+#user-output .panel-body {
+    padding: 0;
+}
