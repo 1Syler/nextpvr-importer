@@ -15,6 +15,7 @@ I have tested this on both Linux and Windows, with Firefox and Chrome. Chrome wo
 It can be made to run on Firefox by enabling SSL and adding these header to the server response:
 
 Header set Cross-Origin-Opener-Policy: same-origin
+
 Header set Cross-Origin-Embedder-Policy: require-corp
 
 Unfortunately, when running it on > 20 files for me, Firefox consumes all of my RAM and crahes.
