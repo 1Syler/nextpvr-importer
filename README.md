@@ -26,6 +26,7 @@ Bug reported https://github.com/ffmpegwasm/ffmpeg.wasm/issues/144
 
 ## TODO
 
+* Add filename filtering to remove junk from filename
 * Add pre-fill input for Title, SubTitle, Genre etc
 * Add ability to select a folder to apply filter too
 * Implement saving data to IndexedDB
