@@ -4,13 +4,25 @@
     <title>NextPVR Import XML Creator</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"\
+     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="./components/main-styles.css">
     <link rel="stylesheet" href="./components/user-output-ui.css">
+    <link rel="stylesheet" href="./components/file-rating-bootstrap.css">
 </head>
     <body>
-    <div id="main-content" class="container pb-4">
+    <div class="modal fade" id="file-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div id="recording-editor" class="modal-body">
+                
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="container-fluid pb-4">
         <div class="row">
             <div class="col-lg-12">
                 <div class="pb-2 mt-4 mb-2 border-bottom">
@@ -20,92 +32,158 @@
         </div>
             
         <div class="row mt-3">
-            <div id="user-input" class="col-lg-6">
-                <div class="form-inline form-row mt-2">
-                    <div class="col-lg-3">
-                        <button type="button" id="open-directory" class="btn btn-info btn-sm"\
-                        placeholder="/home/user/videos/" disabled>Open Directory</button>
-                    </div>
-                    <div class="col-lg-9">
-                        <input type="text" id="dirPath" class="form-control form-control-sm" placeholder="Full Directory Path">
-                    </div>
-                </div>
-                
-                <div id="user-input" class="form-inline form-row mt-2">
-                    <div class="col-lg-3">
-                        <button type="button" id="run-filter" class="btn btn-success btn-sm" title="Run custom filter">Run Filter</button>
-                    </div>
-                    <div class="col-lg-4">
-                        <select id="prop-name" class="form-control form-control-sm">
-                            <option value=""></option>
-                            <option value="Genre">Genre</option>
-                            <option value="name">Name</option>
-                            <option value="SubTitle">Sub Title</option>
-                            <option value="Title">Title</option>
-                            <option value="year">Year</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-5">
-                        <input type="text" id="custom-filter" class="form-control form-control-sm" placeholder="Custom regex replace filter">
-                    </div>
-                </div>
-                
-                <div id="user-input" class="form-inline form-row mt-2">
-                    <div class="col-lg-3">
-                        <button type="button" id="save" class="btn btn-success btn-sm" title="Save NextPVR XML" disabled>Save XML File</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-6">
-                <div class="row">
-                    <div id="progress-indicator" class="col-lg-12">
-                        <label for="progress">Adding User Library</label>
-                        <div class="progress">
-                            <div id="progress" class="progress-bar progress-bar-striped" role="progressbar"\
-                            aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            <div id="content-left" class="col-lg-6">
+                <div id="user-input">
+                    <div class="form-inline form-row">
+                        <div class="col-lg-3">
+                            <button type="button" id="open-directory" class="btn btn-info btn-sm"\
+                            placeholder="/home/user/videos/" disabled>Open Directory</button>
+                        </div>
+                        <div class="col-lg-9">
+                            <input type="text" id="dirPath" class="form-control form-control-sm"\
+                             placeholder="Full Directory Path">
                         </div>
                     </div>
                     
-                    <div id="error-log" class="col-lg-12">
-                        <div class="alert alert-danger">
-                            <h4>Error Adding files:</h4>
-                            <div id="error-files">
+                    <div class="form-inline form-row mt-2">
+                        <div class="col-lg-3">
+                            <button type="button" id="run-filter" class="btn btn-success btn-sm"\
+                             title="Run custom filter" disabled>Run Filter</button>
+                        </div>
+                        <div class="col-lg-4">
+                            <select id="prop-name" class="form-control form-control-sm">
+                                <option value=""></option>
+                                <option value="Genre">Genre</option>
+                                <option value="name">Name</option>
+                                <option value="SubTitle">Sub Title</option>
+                                <option value="Title">Title</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-5">
+                            <input type="text" id="custom-filter" class="form-control form-control-sm"\
+                             placeholder="Custom regex replace filter">
+                        </div>
+                    </div>
+                    
+                    <div class="form-inline form-row mt-2">
+                        <div class="col-lg-3">
+                            <button type="button" id="save" class="btn btn-success btn-sm"\
+                             title="Save NextPVR XML" disabled>Save XML File</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="user-library" class="mt-3">
+                    <div class="row">
+                        <div id="progress-indicator" class="col-lg-12 mb-3">
+                            <div class="progress">
+                                <div id="progress" class="progress-bar" role="progressbar"\
+                                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar-title"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="error-log" class="col-lg-12">
+                            <div class="alert alert-danger">
+                                <h4>Error Adding files:</h4>
+                                <div id="error-files">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <h3>User Library</h3>
+                    </div>
+                
+                    <div id="user-output">
+                    </div>
+                </div>
+            </div>
+                
+            <div id="content-right" class="col-lg-6">
+                <div id="input-options" class="col-lg-12">
+                    <div id="input-options-box">
+                        <h6 class="input-options-header pb-1">Data Source</h6>
+                        <div class="form-row">
+                            <div class="col-lg-4">
+                                <div class="form-check">
+                                    <input type="radio" id="get-none" class="form-check-input"\
+                                     name="data-source" value="0" checked>
+                                    <label class="form-check-label" for="get-none">None</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="form-check">
+                                    <input type="radio" id="get-ffmpeg" class="form-check-input"\
+                                     name="data-source" value="1">
+                                    <label class="form-check-label" for="get-ffmpeg">FFmpeg</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="form-check">
+                                    <input type="radio" id="get-itunes" class="form-check-input"\
+                                     name="data-source" value="2">
+                                    <label class="form-check-label" for="get-itunes">iTunes</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="input-options-header pb-1 mt-3">Filter Options</h6>
+                        <div class="form-row mt-2">
+                            <div class="col-lg-4">
+                                <div class="form-check">
+                                    <input type="radio" id="no-filter" class="form-check-input"\
+                                     name="filter-opt" value="0" checked>
+                                    <label class="form-check-label" for="no-filter">No Filters</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="form-check">
+                                    <input type="radio" id="name-filter" class="form-check-input"\
+                                     name="filter-opt" value="1">
+                                    <label class="form-check-label" for="name-filter">Name Only</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="form-check">
+                                    <input type="radio" id="name-year-filter" class="form-check-input"\
+                                     name="filter-opt" value="2">
+                                    <label class="form-check-label" for="name-year-filter">Name and (year)</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="input-options-header pb-1 mt-3">Prefill Options</h6>
+                        <div class="form-row mt-2">
+                            <div class="col-lg-4">
+                                <input type="text" id="dummy-time" class="form-control form-control-sm"\
+                                 placeholder="Recording Time" value="02:00:00">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="row mt-3">
-            <div id="recording-header" class="col-lg-12">
-                <div class="mt-1 mb-3">
-                  <h3>User Library</h3>
-                </div>
-            </div>
-            
-            <div id="recording-editor" class="col-lg-6">
-            </div>
-            
-            <div id="user-output" class="col-lg-6">
-            </div>
-        </div>
     </div>
-
-
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="./components/file-rating-bootstrap.css">
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"\
+     integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"\
+     integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <script type="text/javascript" src='./vendor/ffmpeg/ffmpeg.min.js'></script>
+    <script type="text/javascript" src='./components/recording-xml-class.js'></script>
+    <script type="text/javascript" src='./components/recording-ui-class.js'></script>
+    <script type="text/javascript" src='./components/data-source-ffmpeg-class.js'></script>
+    <!--<script type="text/javascript" src='./components/data-source-itunes-class.js'></script>-->
+    <script type="module" src="./vendor/browser-nativefs/browser-nativefs.js"></script>
         
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-
-        <script type="text/javascript" src='./vendor/ffmpeg/ffmpeg.min.js'></script>
-        <script type="text/javascript" src='./components/recording-xml-class.js'></script>
-        <script type="text/javascript" src='./components/recording-ui-class.js'></script>
-        <script type="text/javascript" src='./components/start-recording-ffmpeg.js'></script>
-        <script type="module" src="./vendor/browser-nativefs/browser-nativefs.js"></script>
     </body>
 </html>
 

@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
 
 import {
     directoryOpen,
     fileSave,  
 } from 'https://unpkg.com/browser-nativefs';
 
-
 (async () => {  
     const openDirectoryButton = document.querySelector('#open-directory');
     const saveButton = document.querySelector('#save');
+    
+    // Load classes
+    const template = new recordingsTemplate();
+    const ffmpeg = new ffmpegData();
+    const recordingDirectories = new recordingUi();
 
     openDirectoryButton.addEventListener('click', async () => {
         try {
             const blobs = await directoryOpen({recursive: true});
-            //const blobs = await directoryOpen();
             
+            // Sort the recordings then add them in recordingsTemplate
             blobs.sort((a, b) => {
                 a = a.webkitRelativePath.toLowerCase();
                 b = b.webkitRelativePath.toLowerCase();
@@ -41,9 +44,22 @@ import {
                 }
                 return 0;
             });
-            console.log(blobs);
+            template.addRecordings(blobs);
             
-            startRecordingFfmpeg(blobs);
+            // Gather other data if user has selected a data source option
+            await recordingDirectories.createDirectories(template.getRecordings());
+            const dataSourceOpt = $('input[name="data-source"]:checked').val();
+            
+            if(dataSourceOpt == 0) {
+                recordingDirectories.createDirUi(false, false);
+            } else if(dataSourceOpt == 1) {
+                await ffmpeg.loadFfmpeg();
+                await ffmpeg.runFfmpeg(template.getRecordings(), recordingDirectories)
+            } else if(dataSourceOpt == 2) {
+                //testapicall(blobs);
+            }
+            console.log(template);
+            
         } catch (err) {
             if (err.name !== 'AbortError') {
                 console.error(err);

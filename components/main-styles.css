@@ -1,0 +1,79 @@
+.progress {
+    position: relative;
+    color: black;
+    background: white;
+    height: 25px;
+}
+
+.progress-bar {
+    background: cornflowerblue;
+}
+
+.progress-bar-title {
+    position: absolute;
+    text-align: center;
+    line-height: 25px; /* line-height should be equal to bar height */
+    overflow: hidden;
+    font-weight: bold;
+    right: 0;
+    left: 0;
+    top: 0;
+
+}
+
+.progress-bar-title #file-progress {
+    color: red;
+}
+
+#main-content {
+    background: linear-gradient(-45deg, black, transparent);
+}
+
+#user-input input, #user-input button, #user-input select {
+    width: 100%;
+}
+
+#user-input button {
+    font-size: .81rem;
+}
+
+#input-options {
+    color: darkslategray;
+}
+
+#input-options-box {
+    background: gainsboro;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.input-options-header {
+    border-bottom: solid 1px dimgray;
+    font-weight: 600;
+}
+
+#progress-indicator, #error-log {
+    display: none;
+}
+
+#recording-editor button {
+    width: 100%;
+    font-size: 13px;
+    padding: .10rem .5rem;
+}
+
+.recording-file-ui {
+    background: black;
+    color: white;
+    font-size: 14px;
+}
+
+#vid-artwork-img {
+    height: 150px;
+    width: 100%;
+}
+
+#xml-data span {
+    display: inline;
+}
+
