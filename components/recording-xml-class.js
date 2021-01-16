@@ -238,7 +238,6 @@ class recordingsTemplate {
                     curRec.recordingData.fileType = fileType;
                     curRec.recordingData.filenameMime = fileMime;
                     
-                    if(/^(19[3-9]\d|20[0-4]\d|2050)$/.test(str)) {
                     // Set user input duration
                     const duration = $("#dummy-time").val();
                     if (/^[9-9]\d:[6-9]\d:[6-9]\d$/.test(duration)) {
