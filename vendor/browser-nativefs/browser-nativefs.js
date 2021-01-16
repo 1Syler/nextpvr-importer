@@ -22,6 +22,7 @@ import {
 (async () => {  
     const openDirectoryButton = document.querySelector('#open-directory');
     const saveButton = document.querySelector('#save');
+    const dataSourceOpt = $('input[name="data-source"]:checked').val();
     
     // Load classes
     const template = new recordingsTemplate();
@@ -44,11 +45,10 @@ import {
                 }
                 return 0;
             });
-            template.addRecordings(blobs);
+            template.addRecordings(blobs, dataSourceOpt);
             
             // Gather other data if user has selected a data source option
             await recordingDirectories.createDirectories(template.getRecordings());
-            const dataSourceOpt = $('input[name="data-source"]:checked').val();
             
             if(dataSourceOpt == 0) {
                 recordingDirectories.createDirUi(false, false);
