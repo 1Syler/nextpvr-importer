@@ -240,7 +240,7 @@ class recordingsTemplate {
                     
                     // Set user input duration
                     const duration = $("#dummy-time").val();
-                    if (/^[9-9]\d:[6-9]\d:[6-9]\d$/.test(duration)) {
+                    if (/^\d\d:\d\d:\d\d$/.test(duration)) {
                         curRec.dummyDuration = duration;
                     }
                     
