@@ -257,7 +257,7 @@ class recordingUi extends recordingsDirectoryStructure {
             if($(`#file-panel-${file.idNum}`).length == 0) {
                 $(`#user-output .panel #${pathId}-files`).append(filePanelUi);
             } else {
-                $(`#user-output .panel #${pathId}-files`).replaceWith(filePanelUi);
+                $(`#user-output .panel #${pathId}-files #file-panel-${file.idNum}`).replaceWith(filePanelUi);
             }
             
             // Set a click handler for the file edit button
