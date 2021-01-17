@@ -239,8 +239,23 @@ class recordingsTemplate {
                 curRec.recordingData.filenameMime = fileMime;
                 
                 // Set user input duration
+                const genreOption = $("#genre").val();
+                const title = $("#title-input").val();
+                const subTitle = $("#sub-title-input").val();
                 const duration = $("#dummy-time").val();
-                if (/^\d\d:[0-5]\d:[0-5]\d$/.test(duration)) {
+                if(genreOption != "") {
+                console.log(genreOption);
+                    curRec.recordingXmlVals.Genre = genreOption;
+                }
+                if(title.length > 0) {
+                console.log(title);
+                    curRec.recordingXmlVals.Title = title;
+                }
+                if(subTitle.length > 0) {
+                console.log(subTitle);
+                    curRec.recordingXmlVals.SubTitle = subTitle;
+                }
+                if(/^\d\d:[0-5]\d:[0-5]\d$/.test(duration)) {
                     curRec.dummyDuration = duration;
                 }
                 
