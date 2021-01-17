@@ -175,7 +175,8 @@ class recording {
 class recordingsTemplate {
     constructor(blobs) {
         this.dirSeparator = this.getPathSeperator();  // Set the directory path separator \ or /
-        this.rootDir = "";                            // Full directory path of files
+        this.fullPath = "";                           // Full directory path of files
+        this.rootDirName = "";                        // Last part of this.fullPath
         this.recordings = [];                         // An array of recording class instances
         this.numRecordings = 0;                       // The current recording number
     }
@@ -219,8 +220,8 @@ class recordingsTemplate {
     addRecordings(blobs, opt) {
         debugMsg(`[info] Start addRecordings()`);
         // Set the root directory and name from user input
-        this.rootDir = this.validateRootDir(document.querySelector('#dirPath').value);
-        this.rootDirName = this.getDirName(this.rootDir); // The last part of this.rootDir path
+        this.fullPath = this.validateRootDir(document.querySelector('#dirPath').value);
+        this.rootDirName = this.getDirName(this.fullPath); // The last part of this.fullPath path
         const filterOption = $('input[name="filter-opt"]:checked').val();
         const genreOption = $("#genre-input").val();
         const title = $("#title-input").val();
@@ -242,25 +243,29 @@ class recordingsTemplate {
                 curRec.recordingData.fileType = fileType;
                 curRec.recordingData.filenameMime = fileMime;
                 
-                let relativePath = blob.webkitRelativePath.replaceAll("/", this.dirSeparator);
+                const relativePath = blob.webkitRelativePath.replaceAll("/", this.dirSeparator);
                 curRec.recordingData.relativePath = relativePath;
-                let fullPath = this.rootDir + relativePath;
-                curRec.recordingXmlVals.filename = fullPath;
+                curRec.recordingXmlVals.filename = this.fullPath + relativePath;
+                
+                
+                
+                let fullPath = this.rootDirName + "/" + relativePath;
                 fullPath = fullPath.replaceAll("/", this.dirSeparator);
-                curRec.recordingData.fullPathArr = fullPath.slice(0, fullPath.lastIndexOf(this.dirSeparator)).split(this.dirSeparator);
+                const fullPathArr = fullPath.slice(0, fullPath.lastIndexOf(this.dirSeparator)).split(this.dirSeparator);
+                curRec.recordingData.fullPathArr = fullPathArr.filter(Boolean)
                 
                 fullPath = fullPath.replace(/[^a-zA-z0-9/]/g, "");
                 fullPath = fullPath.replaceAll(this.dirSeparator, "-");
                 fullPath = fullPath.slice(0, fullPath.lastIndexOf("-"));
                 curRec.recordingData.fullPathId = fullPath;
-                curRec.recordingData.fullPathIdArr = fullPath.split("-");
+                curRec.recordingData.fullPathIdArr = fullPath.split("-").filter(Boolean);
                 
                 // Set the directory name and file name without the extension
                 fileName = fileName.substr(0, fileName.lastIndexOf(fileMime));
-                let dirName = this.getDirName(relativePath);
+                const dirName = this.getDirName(relativePath);
                 
                 // Extract the year from either the name of the file or the directory name
-                let year = this.getRecordingYear([fileName, dirName]);
+                const year = this.getRecordingYear([fileName, dirName]);
                 curRec.recordingData.year = year;
                 
                 // Set user input options
@@ -295,7 +300,7 @@ class recordingsTemplate {
     
     // Called From:  this.addRecording()
     // dir:          The user input root directory path
-    // Function:     Adds a seperator to the end of this.rootDir if it doesn't have one
+    // Function:     Adds a seperator to the end of this.fullPath if it doesn't have one
     // Return:       The root directory or a defualt string if the user input is invalid
     validateRootDir(dir) {
         debugMsg(`[info] Start validateRootDir(${dir})`);

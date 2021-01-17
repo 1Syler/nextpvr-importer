@@ -49,10 +49,13 @@ class ffmpegData {
         let numRecs = recordings.length;
         $("#progress-indicator").css("display", "block");
         
+        $(".progress-bar-title").html(`<span id="file-progress">FFmpeg Loading...</span>`);
         await this.loadFfmpeg();
+        
         for(const recording of recordings) {
             $("#progress").css("width", Math.floor(100 / numRecs * progNum) + "%");
             $(".progress-bar-title").html(`FFmpeg checking file: <span id="file-progress">${recording.recordingXmlVals.name}</span>`);
+            
             debugMsg("[info] Running recording with FFmpeg to get file details");
             if(recording.ffmpegStatus == null || recording.ffmpegStatus == false) {
                 try {

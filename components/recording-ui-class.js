@@ -166,6 +166,9 @@ class recordingUi extends recordingsDirectoryStructure {
                                         <span id="${directory.pathId}-arrow">
                                             <i class="fa fa-angle-up float-right adjust-position-arrow"></i>
                                         </span>
+                                        <span id="${directory.pathId}-select-folder">
+                                            <i class="fa fa-check-circle float-right adjust-position-arrow pr-3"></i>
+                                        </span>
                                     </span>
                                 </h4>
                             </div>
@@ -192,14 +195,22 @@ class recordingUi extends recordingsDirectoryStructure {
                     $(`#${directory.pathId}-panel`).css("margin-left", `15px`);
                 }
                 
+                const selectIcon = $(`#${directory.pathId}-panel #${directory.pathId}-select-folder i`);
+                $(`#${directory.pathId}-panel #${directory.pathId}-select-folder i`).click(function(event) {
+                    if ($(this).is(event.target)) {
+                        (selectIcon.css("color") == "rgb(255, 255, 255)") ? selectIcon.css("color", "green") : selectIcon.css("color", "white");
+                        event.stopPropagation();
+                    }
+                });
+                
                 // When bootstrap collapse event is triggered change the arrow UI
-                $(`#collapse${directory.dirId}`).on('show.bs.collapse', function(e) {
-                    if ($(this).is(e.target)) {
+                $(`#collapse${directory.dirId}`).on('show.bs.collapse', function(event) {
+                    if ($(this).is(event.target)) {
                         $(`#${directory.pathId}-panel #${directory.pathId}-arrow i`).replaceWith(folderArrowDown);
                     }
                 });
-                $(`#collapse${directory.dirId}`).on('hide.bs.collapse', function(e) {
-                    if ($(this).is(e.target)) {
+                $(`#collapse${directory.dirId}`).on('hide.bs.collapse', function(event) {
+                    if ($(this).is(event.target)) {
                         $(`#${directory.pathId}-panel #${directory.pathId}-arrow i`).replaceWith(folderArrowUp);
                     }
                 });
@@ -264,10 +275,8 @@ class recordingUi extends recordingsDirectoryStructure {
             
             // Set a click handler for the file edit button
             const _self = this;
-            $(`#file-panel-${file.idNum}-edit`).click(function(ele) {
-                if ($(this).is(ele.target)) {
-                    _self.openFileUi(file);
-                }
+            $(`#file-panel-${file.idNum}-edit`).click(function() {
+                _self.openFileUi(file);
             });
         }
     }
