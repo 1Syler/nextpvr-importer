@@ -49,6 +49,7 @@ class ffmpegData {
         let numRecs = recordings.length;
         $("#progress-indicator").css("display", "block");
         
+        await this.loadFfmpeg();
         for(const recording of recordings) {
             $("#progress").css("width", Math.floor(100 / numRecs * progNum) + "%");
             $(".progress-bar-title").html(`FFmpeg checking file: <span id="file-progress">${recording.recordingXmlVals.name}</span>`);
@@ -69,7 +70,7 @@ class ffmpegData {
                     recording.ffmpegStatus = false;
                     console.error(`[ERROR] Error couldn't get FFmpeg details for '${recording.blob.name}': ${err}`);
                 }
-                let dirArr = recordingDirectories.getAllDirectories(recording.recordingData.fullPathArr);
+                let dirArr = recordingDirectories.getAllDirectories(recording.recordingData.fullPathIdArr);
                 recordingDirectories.createDirUi(dirArr, [recording]);
                 progNum++;
             }

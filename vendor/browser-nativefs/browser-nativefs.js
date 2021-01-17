@@ -22,7 +22,6 @@ import {
 (async () => {  
     const openDirectoryButton = document.querySelector('#open-directory');
     const saveButton = document.querySelector('#save');
-    const dataSourceOpt = $('input[name="data-source"]:checked').val();
     
     // Load classes
     const template = new recordingsTemplate();
@@ -45,6 +44,7 @@ import {
                 }
                 return 0;
             });
+            const dataSourceOpt = $('input[name="data-source"]:checked').val();
             template.addRecordings(blobs, dataSourceOpt);
             
             // Gather other data if user has selected a data source option
@@ -53,7 +53,6 @@ import {
             if(dataSourceOpt == 0) {
                 recordingDirectories.createDirUi(false, false);
             } else if(dataSourceOpt == 1) {
-                await ffmpeg.loadFfmpeg();
                 await ffmpeg.runFfmpeg(template.getRecordings(), recordingDirectories)
             } else if(dataSourceOpt == 2) {
                 //testapicall(blobs);

@@ -19,10 +19,9 @@ class recording {
             duration: "",                      // HH:MM:SS
             year: "",                          // YYYY
             relativePath: "",                  // folder/another/myvid.avi
-            fullPathArr: [],                   // An array of relativePath
-            fullPathIdArr: [],                 // An array of relativePath.replace(/[^a-zA-z0-9/]/g)
+            fullPathArr: [],                   // [] relativePath
+            fullPathIdArr: [],                 // [] relativePath.replace(/[^a-zA-z0-9/]/g)
             fullPathId: "",                    // full-path-folder-another
-            dirName: "",                       // another
             fileType: "",                      // video/x-msvideo
             filenameMime: ""                   // .avi
         }
@@ -221,28 +220,50 @@ class recordingsTemplate {
         debugMsg(`[info] Start addRecordings()`);
         // Set the root directory and name from user input
         this.rootDir = this.validateRootDir(document.querySelector('#dirPath').value);
+        this.rootDirName = this.getDirName(this.rootDir); // The last part of this.rootDir path
         const filterOption = $('input[name="filter-opt"]:checked').val();
+        const genreOption = $("#genre-input").val();
+        const title = $("#title-input").val();
+        const subTitle = $("#sub-title-input").val();
+        const duration = $("#dummy-time").val();
         
         for(const blob of blobs) {
             debugMsg("[info] Checking if the recording is a video file");
             const blobFound = this.checkBlobExists(blob);
-            const fileMime = this.checkMimeTypeStr(blob.name);
             const fileType = blob.type;
+            const fileMime = this.checkMimeTypeStr(blob.name);
             let fileName = blob.name;
             
             if(!blobFound && fileType.startsWith('video/') || !blobFound &&  fileMime != false) {
                 debugMsg(`[info] Creating new recording for '${blob.name}' and setting its properties`);
                 this.recordings.push(new recording(this.numRecordings));
-                let curRec = this.recordings[this.numRecordings];
+                const curRec = this.recordings[this.numRecordings];
                 curRec.blob = blob;
                 curRec.recordingData.fileType = fileType;
                 curRec.recordingData.filenameMime = fileMime;
                 
-                // Set user input duration
-                const genreOption = $("#genre-input").val();
-                const title = $("#title-input").val();
-                const subTitle = $("#sub-title-input").val();
-                const duration = $("#dummy-time").val();
+                let relativePath = blob.webkitRelativePath.replaceAll("/", this.dirSeparator);
+                curRec.recordingData.relativePath = relativePath;
+                let fullPath = this.rootDir + relativePath;
+                curRec.recordingXmlVals.filename = fullPath;
+                fullPath = fullPath.replaceAll("/", this.dirSeparator);
+                curRec.recordingData.fullPathArr = fullPath.slice(0, fullPath.lastIndexOf(this.dirSeparator)).split(this.dirSeparator);
+                
+                fullPath = fullPath.replace(/[^a-zA-z0-9/]/g, "");
+                fullPath = fullPath.replaceAll(this.dirSeparator, "-");
+                fullPath = fullPath.slice(0, fullPath.lastIndexOf("-"));
+                curRec.recordingData.fullPathId = fullPath;
+                curRec.recordingData.fullPathIdArr = fullPath.split("-");
+                
+                // Set the directory name and file name without the extension
+                fileName = fileName.substr(0, fileName.lastIndexOf(fileMime));
+                let dirName = this.getDirName(relativePath);
+                
+                // Extract the year from either the name of the file or the directory name
+                let year = this.getRecordingYear([fileName, dirName]);
+                curRec.recordingData.year = year;
+                
+                // Set user input options
                 if(genreOption != "") {
                     curRec.recordingXmlVals.Genre = genreOption;
                 }
@@ -255,29 +276,6 @@ class recordingsTemplate {
                 if(/^\d\d:[0-5]\d:[0-5]\d$/.test(duration)) {
                     curRec.dummyDuration = duration;
                 }
-                
-                // Set recording properties
-                let relativePath = blob.webkitRelativePath.replaceAll("/", this.dirSeparator);
-                let dirName = this.getDirName(relativePath);
-                let fullPath = this.rootDir + relativePath;
-                let year = this.getRecordingYear([fileName, dirName]);
-                curRec.recordingData.relativePath = relativePath;
-                curRec.recordingXmlVals.filename = fullPath;
-                curRec.recordingData.dirName = dirName;
-                curRec.recordingData.year = year;
-                
-                // Sanitise the full path then split into array and create path ID
-                fullPath = fullPath.replaceAll("/", this.dirSeparator);
-                curRec.recordingData.fullPathArr = fullPath.split(this.dirSeparator);
-                
-                fullPath = fullPath.replace(/[^a-zA-z0-9/]/g, "");
-                fullPath = fullPath.replaceAll(this.dirSeparator, "-");
-                fullPath = fullPath.slice(0, fullPath.lastIndexOf("-"));
-                curRec.recordingData.fullPathId = fullPath;
-                curRec.recordingData.fullPathIdArr = fullPath.split("-");
-                
-                // If the user has selected to apply a name filter
-                fileName = fileName.substr(0, fileName.lastIndexOf(fileMime));
                 if(filterOption != false) {
                     fileName = this.filterFileName(fileName, year, filterOption);
                 }
@@ -312,6 +310,24 @@ class recordingsTemplate {
     }
     
     // Called From:  this.addRecording()
+    // dir:          A directory/file path
+    // Function:     ...
+    // Return:       ...
+    getDirName(dir) {
+        debugMsg(`[info] Start getDirName(${dir})`);
+        const dirNameEnd = dir.lastIndexOf(this.dirSeparator);
+        dir = dir.substr(0, dirNameEnd);
+        
+        const dirLen = dir.length;
+        let dirNameStart = dir.lastIndexOf(this.dirSeparator) + 1;
+        dirNameStart = (dirNameStart > -1) ? dirNameStart : dirNameStart - dirLen;
+        dir = dir.substr(dirNameStart);
+        
+        debugMsg(`[info] End getDirName()`);
+        return dir;
+    }
+    
+    // Called From:  this.addRecording()
     // blob          blob.name video.mp4
     // Function:     Checks if a blob with matching properties already exists in the library
     // Return:       True if the blob alreay exists false otherwise
@@ -330,24 +346,6 @@ class recordingsTemplate {
         }
         debugMsg(`[debug] The blob was not found adding it to recordings`);
         return false;
-    }
-    
-    // Called From:  this.addRecording()
-    // dir:          A directory/file path
-    // Function:     ...
-    // Return:       ...
-    getDirName(dir) {
-        debugMsg(`[info] Start getDirName(${dir})`);
-        const dirNameEnd = dir.lastIndexOf(this.dirSeparator);
-        dir = dir.substr(0, dirNameEnd);
-        
-        const dirLen = dir.length;
-        let dirNameStart = dir.lastIndexOf(this.dirSeparator) + 1;
-        dirNameStart = (dirNameStart > -1) ? dirNameStart : dirNameStart - dirLen;
-        dir = dir.substr(dirNameStart);
-        
-        debugMsg(`[info] End getDirName()`);
-        return dir;
     }
     
     // Called From:  this.addRecording()

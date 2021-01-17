@@ -9,6 +9,11 @@ class directory {
         this.files = []                                          // An array of recording belonging to this folder
     }
     
+    // ...
+    setDirNameId(pathId) {
+        return pathId.slice(pathId.lastIndexOf("-") + 1)
+    }
+    
     // Incremnt the number of folder in this directory
     updateNumFolders() {
         this.numFolders++;
@@ -61,7 +66,6 @@ class recordingsDirectoryStructure {
         // Check each recording
         for(const recording of recordings) {
             const recPathId = recording.recordingData.fullPathId;
-            const dirName = recording.recordingData.dirName;
             
             // Check if a directory with the full path already exists
             let dir = this.getDirectory(recPathId);
@@ -70,15 +74,14 @@ class recordingsDirectoryStructure {
                 let prevPathId = "";
                 
                 // Check each part of the recording path
-                const fullPathIdArr = recording.recordingData.fullPathIdArr;
-                const fullPathArr = recording.recordingData.fullPathArr;
-                for(let n = 0; n < fullPathIdArr.length; n++) {
-                    pathId = (pathId == "") ? fullPathIdArr[n] : pathId + "-" + fullPathIdArr[n];
+                let pathCount = 0;
+                for(const path of recording.recordingData.fullPathIdArr) {
+                    pathId = (pathId == "") ? path : pathId + "-" + path;
                     
                     //create the directory if it doesn't exist
                     dir = this.getDirectory(pathId);
                     if(dir === false) {
-                        this.directories.push(new directory(pathId, this.dirId, fullPathArr[n]));
+                        this.directories.push(new directory(pathId, this.dirId, recording.recordingData.fullPathArr[pathCount]));
                         this.dirId++;
                         
                         // Increment the number of folders for the previous folder
@@ -86,12 +89,12 @@ class recordingsDirectoryStructure {
                             this.getDirectory(prevPathId).updateNumFolders();
                         }
                     }
+                    pathCount++;
                     prevPathId = pathId;
                 }
             }
             this.getDirectory(recPathId).addFile(recording);
         }
-        console.log(this.directories);
     }
     
     // Called From:  ...
@@ -275,9 +278,9 @@ class recordingUi extends recordingsDirectoryStructure {
     // Return:       None
     openFileUi(file) {
         let fileUi = `
-            <div id="recording-${file.idNum}" class="recording-file-ui px-3 pt-3">
+            <div id="recording-${file.idNum}" class="recording-file-ui p-3">
                 <div class="row">
-                    <div class="col-lg-3 mb-3">
+                    <div class="col-lg-3">
                         <img id="vid-artwork-img" src="./img/artwork_placeholder.png" alt="..." class="img-thumbnail mb-3">
                         <button id="recording-${file.idNum}-play" type="button" class="btn btn-danger btn-sm mb-2 disabled">Play</button>
                         <button id="recording-${file.idNum}-edit" type="button" class="btn btn-info btn-sm mb-2" disabled>Edit</button>

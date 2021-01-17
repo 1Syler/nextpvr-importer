@@ -62,12 +62,6 @@
     padding: .10rem .5rem;
 }
 
-.recording-file-ui {
-    background: black;
-    color: white;
-    font-size: 14px;
-}
-
 #vid-artwork-img {
     height: 150px;
     width: 100%;
