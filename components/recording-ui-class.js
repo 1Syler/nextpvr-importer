@@ -1,17 +1,12 @@
 class directory {
-    constructor(pathId, dirId) {
+    constructor(pathId, dirId, dirName) {
         this.dirId = dirId;                                      // A unique directory number ID
         this.pathId = pathId;                                    // root-folder-subfolder-etc
         this.prevPathId = this.setPreviousDirectoryId(pathId);   // root-folder-subfolder
-        this.dirName = this.setDirNameId(pathId);                // etc
+        this.dirName = dirName;                                  // etc
         this.numFiles = 0;                                       // the number files in the directory
         this.numFolders = 0;                                     // the number of folders in the directory
         this.files = []                                          // An array of recording belonging to this folder
-    }
-    
-    // ...
-    setDirNameId(pathId) {
-        return pathId.slice(pathId.lastIndexOf("-") + 1)
     }
     
     // Incremnt the number of folder in this directory
@@ -66,6 +61,7 @@ class recordingsDirectoryStructure {
         // Check each recording
         for(const recording of recordings) {
             const recPathId = recording.recordingData.fullPathId;
+            const dirName = recording.recordingData.dirName;
             
             // Check if a directory with the full path already exists
             let dir = this.getDirectory(recPathId);
@@ -74,13 +70,15 @@ class recordingsDirectoryStructure {
                 let prevPathId = "";
                 
                 // Check each part of the recording path
-                for(const path of recording.recordingData.fullPathArr) {
-                    pathId = (pathId == "") ? path : pathId + "-" + path;
+                const fullPathIdArr = recording.recordingData.fullPathIdArr;
+                const fullPathArr = recording.recordingData.fullPathArr;
+                for(let n = 0; n < fullPathIdArr.length; n++) {
+                    pathId = (pathId == "") ? fullPathIdArr[n] : pathId + "-" + fullPathIdArr[n];
                     
                     //create the directory if it doesn't exist
                     dir = this.getDirectory(pathId);
                     if(dir === false) {
-                        this.directories.push(new directory(pathId, this.dirId));
+                        this.directories.push(new directory(pathId, this.dirId, fullPathArr[n]));
                         this.dirId++;
                         
                         // Increment the number of folders for the previous folder
@@ -93,6 +91,7 @@ class recordingsDirectoryStructure {
             }
             this.getDirectory(recPathId).addFile(recording);
         }
+        console.log(this.directories);
     }
     
     // Called From:  ...
