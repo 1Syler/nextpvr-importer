@@ -32,6 +32,13 @@ Regex: /1778 /g (remove "1778 " from the file names)
 ![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/run-filter.png)
 
 
+You can also view and edit a files properties individually.
+
+![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/view-file.png)
+![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/edit-file.png)
+![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/edited-file.png)
+
+
 Running with FFmpeg as the data source will check the file to get an accurate startTime and endTime, this can be done after creating a library with no options. iTunes data source is a work in progress.
 
 ## Issues
