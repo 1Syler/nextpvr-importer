@@ -56,8 +56,6 @@ On Chrome it will run through all files and add them to the list but it may have
 Bug reported https://github.com/ffmpegwasm/ffmpeg.wasm/issues/144
 
 ## TODO
-
-* Add ability to select a folder to apply filter too - WIP
 * Implement saving data to IndexedDB
 * Once the data is saved can implement rescanning for files that failed to be read by FFmpeg
 * Grab details file details from other sources as addition/alternative to FFmpeg when it fails - WIP
