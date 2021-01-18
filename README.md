@@ -10,6 +10,30 @@ I intend to integrate this into my NextPVR server but for now I have created it 
 I have tested this on both Linux and Windows, with Firefox and Chrome. Chrome works great but Firefox require some additional setup to get it working and it is unstable so not worth using.
 
 
+## Usage
+
+An example run with no options. Running with no options will get create the most basic information needed for a valid NextPVR XML file. The startTime and endTime for each file will be set using the default dummy time 02:00:00 (2 Hours), unless changed in Prefill Options.
+
+Full Directory Path: /home/syler/Videos
+
+Open Directoy: /home/syler/Videos/Movies
+
+![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/no-options-run.png)
+
+
+Once you have created a library you can run a custom regex filter on file properties. First you need to select a folder to run the filter on and then set the property and filter. The filter will replace the regex with "".
+
+Selected Folder: Lethal Weapon (1 - 4)
+
+File Property: Name
+
+Regex: /1778 /g (remove "1778 " from the file names)
+
+![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/run-filter.png)
+
+
+Running with FFmpeg as the data source will check the file to get an accurate startTime and endTime, this can be done after creating a library with no options. iTunes data source is a work in progress.
+
 ## Issues
 
 It can be made to run on Firefox by enabling SSL and adding these header to the server response:
