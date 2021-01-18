@@ -233,58 +233,54 @@ class recordingsTemplate {
             const blobFound = this.checkBlobExists(blob);
             const fileType = blob.type;
             const fileMime = this.checkMimeTypeStr(blob.name);
-            let fileName = blob.name;
+            const fileName = blob.name.substr(0, blob.name.lastIndexOf(fileMime));
             
             if(!blobFound && fileType.startsWith('video/') || !blobFound &&  fileMime != false) {
                 debugMsg(`[info] Creating new recording for '${blob.name}' and setting its properties`);
                 this.recordings.push(new recording(this.numRecordings));
                 const curRec = this.recordings[this.numRecordings];
+                const xmlVals = this.recordings[this.numRecordings].recordingXmlVals;
+                const dataVals = this.recordings[this.numRecordings].recordingData;
                 curRec.blob = blob;
                 curRec.recordingData.fileType = fileType;
                 curRec.recordingData.filenameMime = fileMime;
                 
                 const relativePath = blob.webkitRelativePath.replaceAll("/", this.dirSeparator);
-                curRec.recordingData.relativePath = relativePath;
-                curRec.recordingXmlVals.filename = this.fullPath + relativePath;
-                
-                
-                
-                let fullPath = this.rootDirName + "/" + relativePath;
-                fullPath = fullPath.replaceAll("/", this.dirSeparator);
-                const fullPathArr = fullPath.slice(0, fullPath.lastIndexOf(this.dirSeparator)).split(this.dirSeparator);
-                curRec.recordingData.fullPathArr = fullPathArr.filter(Boolean)
-                
-                fullPath = fullPath.replace(/[^a-zA-z0-9/]/g, "");
-                fullPath = fullPath.replaceAll(this.dirSeparator, "-");
-                fullPath = fullPath.slice(0, fullPath.lastIndexOf("-"));
-                curRec.recordingData.fullPathId = fullPath;
-                curRec.recordingData.fullPathIdArr = fullPath.split("-").filter(Boolean);
-                
-                // Set the directory name and file name without the extension
-                fileName = fileName.substr(0, fileName.lastIndexOf(fileMime));
                 const dirName = this.getDirName(relativePath);
-                
-                // Extract the year from either the name of the file or the directory name
                 const year = this.getRecordingYear([fileName, dirName]);
-                curRec.recordingData.year = year;
+                dataVals.relativePath = relativePath;
+                xmlVals.filename = this.fullPath + relativePath;
+                dataVals.year = year;
+                
+                let rootPath = this.rootDirName + "/" + relativePath;
+                const fullPathArr = rootPath.slice(0, rootPath.lastIndexOf(this.dirSeparator)).split(this.dirSeparator);
+                dataVals.fullPathArr = fullPathArr.filter(Boolean)
+                
+                rootPath = rootPath.replace(/[^a-zA-z0-9/]/g, "");
+                rootPath = rootPath.replaceAll(this.dirSeparator, "-");
+                rootPath = rootPath.slice(0, rootPath.lastIndexOf("-"));
+                dataVals.fullPathId = rootPath;
+                dataVals.fullPathIdArr = rootPath.split("-").filter(Boolean);
                 
                 // Set user input options
                 if(genreOption != "") {
-                    curRec.recordingXmlVals.Genre = genreOption;
+                    xmlVals.Genre = genreOption;
                 }
                 if(title.length > 0) {
-                    curRec.recordingXmlVals.Title = title;
+                    xmlVals.Title = title;
                 }
                 if(subTitle.length > 0) {
-                    curRec.recordingXmlVals.SubTitle = subTitle;
+                    xmlVals.SubTitle = subTitle;
                 }
                 if(/^\d\d:[0-5]\d:[0-5]\d$/.test(duration)) {
                     curRec.dummyDuration = duration;
                 }
                 if(filterOption != false) {
-                    fileName = this.filterFileName(fileName, year, filterOption);
+                    xmlVals.name = this.filterFileName(fileName, year, filterOption);
+                } else {
+                    // Do basic sanatising of the name
+                    xmlVals.name = fileName;
                 }
-                curRec.recordingXmlVals.name = fileName;
                 
                 // If the no data source option was choosen create dummy startTime and endTime
                 if(opt == 0) {
@@ -415,7 +411,7 @@ class recordingsTemplate {
         // Remove non alphanumeric characters
         name = name.replace(/\./g, " ");
         name = name.replace(/[^a-zA-Z0-9 ]/g, "");
-        
+        console.log(name);
         let yearPos = name.lastIndexOf(year);
         if(yearPos > -1) {
             // Remove anything but the name
@@ -462,47 +458,6 @@ class recordingsTemplate {
         xmlArr.push(recordingsEnd);
         return xmlArr;
     }
-    
-    // Called From:  ...
-    // filter        A user input regular expression /[^a-z ]/g
-    // propName      The recording property name
-    // recNum        The current recording number
-    // Called From:  file://recording-ui-class.js (constructor())
-    // recNum        false
-    // Function:     Runs a user customr replace regex on each file name
-    // Return:       none
-    /*runCustomFilter(filter, propName, recNum) {
-        debugMsg(`[info] Running users custom replace filter`);
-        //try {
-            if(filter && propName) {
-                const stringToRegex = str => {
-                    // Main regex
-                    const main = str.match(/\/(.+)\/.* /)[1]; // remove space between * / done to comment out block
-                    // Regex options
-                    const options = str.match(/\/.+\/(.*)/)[1];
-                    // Compiled regex
-                    return new RegExp(main, options);
-                }
-                
-                if(recNum === false) {
-                    for(let n = 0; n < template.recordings.length; n++) {
-                        let propVal = template.recordings[n].recordingXmlVals[propName].replace(stringToRegex(filter), "");
-                        template.recordings[n].recordingXmlVals[propName] = propVal;
-                        
-                        debugMsg(`[info] ${propName} value changed to ${propVal} updating UI`);
-                        this.ui.addFileUi(this.ui.files[n].fileId, n, true)
-                    }
-                } else {
-                    let propVal = template.recordings[recNum].recordingXmlVals[propName].replace(stringToRegex(filter), "");
-                    template.recordings[recNum].recordingXmlVals[propName] = propVal;
-                }
-            }
-            
-        }  catch (err) {
-            console.error(`[ERROR] Error in runCustomFilter(): ${err}`);
-        }
-        debugMsg(`[info] Custom replace filter has run`);
-    }*/
 }
 
 

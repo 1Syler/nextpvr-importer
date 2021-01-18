@@ -87,8 +87,6 @@ class ffmpegData {
     // Disable buttons when adding recordings enable them again after
     setButtonState(state) {
         document.getElementById(`run-filter`).disabled = state;
-        document.getElementById(`save`).disabled = state;
-        document.getElementById(`open-directory`).disabled = state;
         document.getElementById(`dirPath`).disabled = state;
         document.getElementById(`prop-name`).disabled = state;
         document.getElementById(`custom-filter`).disabled = state;

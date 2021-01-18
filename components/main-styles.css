@@ -52,6 +52,11 @@
     font-weight: 600;
 }
 
+#error-message {
+    display: none;
+    color: red;
+}
+
 #progress-indicator, #error-log {
     display: none;
 }

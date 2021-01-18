@@ -7,6 +7,8 @@ class directory {
         this.numFiles = 0;                                       // the number files in the directory
         this.numFolders = 0;                                     // the number of folders in the directory
         this.files = []                                          // An array of recording belonging to this folder
+        this.subFolders = [];                                    //
+        this.selected = false;                                   //
     }
     
     // ...
@@ -51,15 +53,16 @@ class recordingsDirectoryStructure {
         
         // Add an event listner to the run filter button 
         // that is enabled one the user library is created
+        const _self = this;
         $(`#run-filter`).click(function() {
             let filter = $("#custom-filter").val();
             let propName = $("#prop-name").val();
-            template.runCustomFilter(filter, propName, false);
+            _self.runCustomFilter(filter, propName, _self.directories);
         });
     }
 
     // Called From:  ...
-    // recordings:         ..
+    // recordings:   ..
     // Function:     ..
     // Return:       ...
     async createDirectories(recordings) {
@@ -84,8 +87,10 @@ class recordingsDirectoryStructure {
                         this.directories.push(new directory(pathId, this.dirId, recording.recordingData.fullPathArr[pathCount]));
                         this.dirId++;
                         
-                        // Increment the number of folders for the previous folder
+                        
+                        // Increment the number of folders for the previous folder and add subfolder for previous folder
                         if(prevPathId != "") {
+                            this.getDirectory(prevPathId).subFolders.push(this.getDirectory(pathId));
                             this.getDirectory(prevPathId).updateNumFolders();
                         }
                     }
@@ -195,10 +200,12 @@ class recordingUi extends recordingsDirectoryStructure {
                     $(`#${directory.pathId}-panel`).css("margin-left", `15px`);
                 }
                 
-                const selectIcon = $(`#${directory.pathId}-panel #${directory.pathId}-select-folder i`);
+                const _self = this;
                 $(`#${directory.pathId}-panel #${directory.pathId}-select-folder i`).click(function(event) {
                     if ($(this).is(event.target)) {
-                        (selectIcon.css("color") == "rgb(255, 255, 255)") ? selectIcon.css("color", "green") : selectIcon.css("color", "white");
+                        const selectIcon = $(`#${directory.pathId}-panel #${directory.pathId}-select-folder i`);
+                        const isSelected = selectIcon.css("color") == "rgb(0, 128, 0)";
+                        _self.selectDirectories([directory], isSelected);
                         event.stopPropagation();
                     }
                 });
@@ -226,10 +233,27 @@ class recordingUi extends recordingsDirectoryStructure {
         }
     }
     
+    selectDirectories(directory, isSelected) {
+        const selectIcon = $(`#${directory[0].pathId}-panel #${directory[0].pathId}-select-folder i`);
+        if(isSelected == false) {
+            selectIcon.css("color", "green");
+            directory[0].selected = true;
+        } else {
+            selectIcon.css("color", "white");
+            directory[0].selected = false;
+        }
+        
+        for(const dir of directory) {
+            for(const subDirs of dir.subFolders) {
+                console.log(subDirs);
+                this.selectDirectories([subDirs], isSelected);
+            }
+        }
+    }
+    
     // Called From:  this.createDirUi
-    // directory:    All the files in the given directory
-    // Called From:  file://start-recording-ffmpeg.js - this.createDirUi
-    // directory:    [] - The current file running in runnung in FFmpeg
+    // files:        ...
+    // pathId:       ...
     // Function:     Creates the File UI for the given file/s
     // Return:       None
     createFileUi(files, pathId) {
@@ -237,16 +261,16 @@ class recordingUi extends recordingsDirectoryStructure {
             const statusUi = '<i class="fail-status fa fa-times-circle float-right adjust-position text-danger" title="Failed to add the file"></i>';
             const ratingUi = `
                 <div class="rating float-right adjust-position">
-                    <input type="radio" name="rating" value="1" id="1">
-                    <label for="1">☆</label>
-                    <input type="radio" name="rating" value="2" id="2">
-                    <label for="2">☆</label>
-                    <input type="radio" name="rating" value="3" id="3">
-                    <label for="3">☆</label>
-                    <input type="radio" name="rating" value="4" id="4">
-                    <label for="4">☆</label>
-                    <input type="radio" name="rating" value="5" id="5">
-                    <label for="5">☆</label>
+                    <input type="radio" name="rating-${file.idNum}" value="1" id="-${file.idNum}-1">
+                    <label for="${file.idNum}-1">☆</label>
+                    <input type="radio" name="rating-${file.idNum}" value="2" id="-${file.idNum}-2">
+                    <label for="${file.idNum}-2">☆</label>
+                    <input type="radio" name="rating-${file.idNum}" value="3" id="-${file.idNum}-3">
+                    <label for="${file.idNum}-3">☆</label>
+                    <input type="radio" name="rating-${file.idNum}" value="4" id="-${file.idNum}-4">
+                    <label for="${file.idNum}-4">☆</label>
+                    <input type="radio" name="rating-${file.idNum}" value="5" id="-${file.idNum}-5">
+                    <label for="${file.idNum}-5">☆</label>
                 </div>
             `;
             const filePanelUi = `
@@ -401,6 +425,50 @@ class recordingUi extends recordingsDirectoryStructure {
         const data = ffmpeg.FS('readFile', 'output.mp4');
         const video = document.getElementById('player');
         video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+    }
+    
+    // Called From:  constructor() event listner
+    // filter        A user input regular expression /[^a-z ]/g
+    // propName      The recording property name
+    // Function:     Runs a user customr replace regex on each file name
+    // Return:       none
+    runCustomFilter(filter, propName, directories) {
+        console.log(directories);
+        if(filter && propName) {
+            // Check which directories have been selected
+            for(const dir of directories) {
+            
+                // Apply filter to files in selected directory
+                if(dir.selected === true) {
+                    try {
+                        const stringToRegex = str => {
+                            // Main regex
+                            const main = str.match(/\/(.+)\/.*/)[1]
+                            
+                            // Regex options
+                            const options = str.match(/\/.+\/(.*)/)[1]
+                            
+                            // Compiled regex
+                            return new RegExp(main, options)
+                        }
+                        
+                        for(const file of dir.files) {
+                            let propVal = file.recordingXmlVals[propName].replace(stringToRegex(filter), "");
+                            file.recordingXmlVals[propName] = propVal;
+                this.createFileUi([file], dir.pathId);
+                        }
+                        $("#error-message").css("display", "none");
+                        
+                        
+                        
+                    } catch(err) {
+                        console.error(err);
+                        $("#error-message").css("display", "block");
+                        $("#error-message").html("The regex filter is invalid!");
+                    }
+                }
+            }
+        }
     }
 }
 
