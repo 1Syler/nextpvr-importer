@@ -59,3 +59,4 @@ Bug reported https://github.com/ffmpegwasm/ffmpeg.wasm/issues/144
 * Implement saving data to IndexedDB
 * Once the data is saved can implement rescanning for files that failed to be read by FFmpeg
 * Grab details file details from other sources as addition/alternative to FFmpeg when it fails - WIP
+* Generate .sh/.bat file to rename physical files with the filtered names
