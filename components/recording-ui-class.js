@@ -245,7 +245,6 @@ class recordingUi extends recordingsDirectoryStructure {
         
         for(const dir of directory) {
             for(const subDirs of dir.subFolders) {
-                console.log(subDirs);
                 this.selectDirectories([subDirs], isSelected);
             }
         }
@@ -455,11 +454,9 @@ class recordingUi extends recordingsDirectoryStructure {
                         for(const file of dir.files) {
                             let propVal = file.recordingXmlVals[propName].replace(stringToRegex(filter), "");
                             file.recordingXmlVals[propName] = propVal;
-                this.createFileUi([file], dir.pathId);
+                            this.createFileUi([file], dir.pathId);
                         }
                         $("#error-message").css("display", "none");
-                        
-                        
                         
                     } catch(err) {
                         console.error(err);

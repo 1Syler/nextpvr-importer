@@ -411,7 +411,7 @@ class recordingsTemplate {
         // Remove non alphanumeric characters
         name = name.replace(/\./g, " ");
         name = name.replace(/[^a-zA-Z0-9 ]/g, "");
-        console.log(name);
+        
         let yearPos = name.lastIndexOf(year);
         if(yearPos > -1) {
             // Remove anything but the name

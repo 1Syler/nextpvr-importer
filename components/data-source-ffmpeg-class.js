@@ -2,6 +2,7 @@ class ffmpegData {
     constructor() {
         this.ffmpeg = null;                           // FFmpeg instance
         this.fetchFile = null;                        // FFmpeg object
+        this.ffmpegSupport = true;                    // True if the browser supports running FFmpeg
         this.logFFmpegProps = false;                  // True when running FFmpeg
         this.recording = null;                        // The current recording instance running in FFmpeg
         this.propFilters = {                          // Used to filter FFmpeg output
@@ -47,41 +48,56 @@ class ffmpegData {
         this.logFFmpegProps = true;
         let progNum = 0;
         let numRecs = recordings.length;
-        $("#progress-indicator").css("display", "block");
         
-        $(".progress-bar-title").html(`<span id="file-progress">FFmpeg Loading...</span>`);
-        await this.loadFfmpeg();
-        
-        for(const recording of recordings) {
-            $("#progress").css("width", Math.floor(100 / numRecs * progNum) + "%");
-            $(".progress-bar-title").html(`FFmpeg checking file: <span id="file-progress">${recording.recordingXmlVals.name}</span>`);
+        try {
+            if(this.ffmpegSupport === true) {
+                await this.loadFfmpeg();
+                $("#progress-indicator").css("display", "block");
+                $(".progress-bar-title").html(`<span id="file-progress">FFmpeg Loading...</span>`);
             
-            debugMsg("[info] Running recording with FFmpeg to get file details");
-            if(recording.ffmpegStatus == null || recording.ffmpegStatus == false) {
-                try {
-                    this.recording = recording;
-                    let blob = recording.blob;
-                    let name = blob.name;
+                for(const recording of recordings) {
+                    $("#progress").css("width", Math.floor(100 / numRecs * progNum) + "%");
+                    $(".progress-bar-title").html(`FFmpeg checking file: <span id="file-progress">${recording.recordingXmlVals.name}</span>`);
                     
-                    this.ffmpeg.FS('writeFile', name, await this.fetchFile(blob));
-                    await this.ffmpeg.run("-i", name);
-                    this.ffmpeg.FS('unlink', name);
-                    recording.ffmpegStatus = true;
-                    
-                } catch (err) {
-                    recording.setEndTimeProp();
-                    recording.ffmpegStatus = false;
-                    console.error(`[ERROR] Error couldn't get FFmpeg details for '${recording.blob.name}': ${err}`);
+                    debugMsg("[info] Running recording with FFmpeg to get file details");
+                    if(recording.ffmpegStatus == null || recording.ffmpegStatus == false) {
+                        try {
+                            this.recording = recording;
+                            let blob = recording.blob;
+                            let name = blob.name;
+                            
+                            this.ffmpeg.FS('writeFile', name, await this.fetchFile(blob));
+                            await this.ffmpeg.run("-i", name);
+                            this.ffmpeg.FS('unlink', name);
+                            recording.ffmpegStatus = true;
+                            
+                        } catch (err) {
+                            recording.setEndTimeProp();
+                            recording.ffmpegStatus = false;
+                            console.error(`[ERROR] Error couldn't get FFmpeg details for '${recording.blob.name}': ${err}`);
+                        }
+                        let dirArr = recordingDirectories.getAllDirectories(recording.recordingData.fullPathIdArr);
+                        recordingDirectories.createDirUi(dirArr, [recording]);
+                        progNum++;
+                    }
                 }
-                let dirArr = recordingDirectories.getAllDirectories(recording.recordingData.fullPathIdArr);
-                recordingDirectories.createDirUi(dirArr, [recording]);
-                progNum++;
+                this.setButtonState(false);
+                this.logFFmpegProps = false;
+                $("#progress-indicator").css("display", "none");
+                $("#progress").css("width", "0%");
+            } else {
+                $("#error-message").css("display", "block");
+                $("#error-message").html("You're browser does not support running FFmpeg");
             }
+            
+        } catch(err) {
+            this.ffmpegSupport = false;
+            $("#progress-indicator").css("display", "none");
+            $("#error-message").css("display", "block");
+            $("#error-message").html("You're browser does not support running FFmpeg");
+            console.error("You're browser does not support SharedArrayBuffer so FFmpeg can not be run");
+        
         }
-        this.setButtonState(false);
-        this.logFFmpegProps = false;
-        $("#progress-indicator").css("display", "none");
-        $("#progress").css("width", "0%");
     }
     
     // Disable buttons when adding recordings enable them again after

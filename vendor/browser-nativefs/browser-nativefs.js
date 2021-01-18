@@ -22,15 +22,18 @@ import {
 (async () => {  
     const openDirectoryButton = document.querySelector('#open-directory');
     const saveButton = document.querySelector('#save');
+    const filterButton = document.querySelector('#run-filter');
     
     // Load classes
     const template = new recordingsTemplate();
     const ffmpeg = new ffmpegData();
+    var ffmpegSupport = true;
     const recordingDirectories = new recordingUi();
 
     openDirectoryButton.addEventListener('click', async () => {
         try {
             const blobs = await directoryOpen({recursive: true});
+            $("#error-message").css("display", "none");
             
             // Sort the recordings then add them in recordingsTemplate
             blobs.sort((a, b) => {
@@ -52,6 +55,7 @@ import {
             await recordingDirectories.createDirectories(template.getRecordings());
             if(dataSourceOpt == 0) {
                 recordingDirectories.createDirUi(false, false);
+            filterButton.disabled = false;
             } else if(dataSourceOpt == 1) {
                 ffmpeg.runFfmpeg(template.getRecordings(), recordingDirectories)
             } else if(dataSourceOpt == 2) {
