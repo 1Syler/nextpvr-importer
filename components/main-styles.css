@@ -26,7 +26,32 @@
 }
 
 #main-content {
-    background: linear-gradient(-45deg, black, transparent);
+    background: linear-gradient(45deg, black, transparent);
+}
+
+#options-collapse {
+    text-align: right;
+    color: greenyellow;
+}
+
+#library-collapse {
+    text-align: right;
+    color: greenyellow;
+}
+
+#user-libraries {
+    border-bottom: solid 2px greenyellow;
+}
+
+#input-options {
+    color: darkslategray;
+    border-bottom: solid 2px greenyellow;
+}
+
+#input-options-box {
+    background: gainsboro;
+    padding: 15px;
+    border-radius: 10px;
 }
 
 #user-input input, #user-input button, #user-input select {
@@ -35,16 +60,6 @@
 
 #user-input button {
     font-size: .81rem;
-}
-
-#input-options {
-    color: darkslategray;
-}
-
-#input-options-box {
-    background: gainsboro;
-    padding: 15px;
-    border-radius: 10px;
 }
 
 .input-options-header {

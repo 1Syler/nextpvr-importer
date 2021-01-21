@@ -25,11 +25,12 @@ import {
     const filterButton = document.querySelector('#run-filter');
     
     // Load classes
-    const template = new recordingsTemplate();
+    const template = new recordingsTemplate(false);
     const ffmpeg = new ffmpegData();
-    var ffmpegSupport = true;
-    const recordingDirectories = new recordingUi();
-
+    const libraryUi = new recordingUi();
+    const libraries = new storedLibraries();
+    libraries.loadLibraries(libraryUi);
+    
     openDirectoryButton.addEventListener('click', async () => {
         try {
             const blobs = await directoryOpen({recursive: true});
@@ -52,12 +53,13 @@ import {
             console.log(template);
             
             // Gather other data if user has selected a data source option
-            await recordingDirectories.createDirectories(template.getRecordings());
+            await libraryUi.createDirectories(template.getRecordings());
             if(dataSourceOpt == 0) {
-                recordingDirectories.createDirUi(false, false);
-            filterButton.disabled = false;
+                libraries.saveLibrary(template);
+                libraryUi.createDirUi(false, false);
+                filterButton.disabled = false;
             } else if(dataSourceOpt == 1) {
-                ffmpeg.runFfmpeg(template.getRecordings(), recordingDirectories)
+                ffmpeg.runFfmpeg(template.getRecordings(), libraryUi)
             } else if(dataSourceOpt == 2) {
                 //testapicall(blobs);
             }

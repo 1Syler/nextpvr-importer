@@ -78,37 +78,13 @@
                     </div>
                 </div>
                 
-                <div id="user-library" class="mt-3">
-                    <div class="row">
-                        <div id="progress-indicator" class="col-lg-12 mb-3">
-                            <div class="progress">
-                                <div id="progress" class="progress-bar" role="progressbar"\
-                                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                <div class="progress-bar-title"></div>
-                            </div>
-                        </div>
-                        
-                        <div id="error-log" class="col-lg-12">
-                            <div class="alert alert-danger">
-                                <h4>Error Adding files:</h4>
-                                <div id="error-files">
-                                </div>
-                            </div>
-                        </div>
+                <div id="input-options" class="mt-3">
+                    <div id="options-collapse"  data-toggle="collapse" data-target="#input-options-box" aria-expanded="false">
+                        <span>Import Options</span>
+                        <i class="fa fa-angle-up"></i>
                     </div>
                     
-                    <div class="mb-3">
-                      <h3>User Library</h3>
-                    </div>
-                
-                    <div id="user-output">
-                    </div>
-                </div>
-            </div>
-                
-            <div id="content-right" class="col-lg-6">
-                <div id="input-options" class="col-lg-12">
-                    <div id="input-options-box">
+                    <div id="input-options-box" class="collapse mt-2">
                         <h6 class="input-options-header pb-1">Data Source</h6>
                         <div class="form-row">
                             <div class="col-lg-4">
@@ -284,6 +260,41 @@
                         </div>
                     </div>
                 </div>
+                
+                <div id="user-libraries" class="mt-3">
+                    <div id="library-collapse" data-toggle="collapse" data-target="#library-box" aria-expanded="false">
+                        <span>Saved Libraries</span>
+                        <i class="fa fa-angle-up"></i>
+                    </div>
+                    
+                    <div id="library-box" class="collapse mt-1"></div>
+                </div>
+            </div>
+                
+            <div id="content-right" class="col-lg-6">
+                
+                <div id="user-library"">
+                    <div class="row">
+                        <div id="progress-indicator" class="col-lg-12 mb-3">
+                            <div class="progress">
+                                <div id="progress" class="progress-bar" role="progressbar"\
+                                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress-bar-title"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="error-log" class="col-lg-12">
+                            <div class="alert alert-danger">
+                                <h4>Error Adding files:</h4>
+                                <div id="error-files">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div id="user-output">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -294,13 +305,34 @@
      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     
     <script type="text/javascript" src='./vendor/ffmpeg/ffmpeg.min.js'></script>
-    <!--<script type="text/javascript" src='./components/indexeddb-class.js'></script>-->
+    <script type="text/javascript" src='./components/indexeddb-class.js'></script>
     <script type="text/javascript" src='./components/recording-xml-class.js'></script>
     <script type="text/javascript" src='./components/recording-ui-class.js'></script>
     <script type="text/javascript" src='./components/data-source-ffmpeg-class.js'></script>
     <!--<script type="text/javascript" src='./components/data-source-itunes-class.js'></script>-->
     <script type="module" src="./vendor/browser-nativefs/browser-nativefs.js"></script>
+    
+    <script>
+        // When bootstrap collapse event is triggered show options box
+        $(`#input-options-box`).on('show.bs.collapse', function(event) {
+            $("#input-options").css("border-bottom", "none");
+            $("#options-collapse .fa-angle-up").replaceWith('<i class="fa fa-angle-down"></i>');
+        });
+        $(`#input-options-box`).on('hide.bs.collapse', function(event) {
+            $("#input-options").css("border-bottom", "solid 2px greenyellow");
+            $("#options-collapse .fa-angle-down").replaceWith('<i class="fa fa-angle-up"></i>');
+        });
         
+        $(`#library-box`).on('show.bs.collapse', function(event) {
+            $("#user-libraries").css("border-bottom", "none");
+            $("#library-collapse .fa-angle-up").replaceWith('<i class="fa fa-angle-down"></i>');
+        });
+        $(`#library-box`).on('hide.bs.collapse', function(event) {
+            $("#user-libraries").css("border-bottom", "solid 2px greenyellow");
+            $("#library-collapse .fa-angle-down").replaceWith('<i class="fa fa-angle-up"></i>');
+        });
+    </script>
+    
     </body>
 </html>
 

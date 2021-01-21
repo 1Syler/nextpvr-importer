@@ -51,9 +51,9 @@ class ffmpegData {
         
         try {
             if(this.ffmpegSupport === true) {
-                await this.loadFfmpeg();
                 $("#progress-indicator").css("display", "block");
                 $(".progress-bar-title").html(`<span id="file-progress">FFmpeg Loading...</span>`);
+                await this.loadFfmpeg();
             
                 for(const recording of recordings) {
                     $("#progress").css("width", Math.floor(100 / numRecs * progNum) + "%");
@@ -85,6 +85,7 @@ class ffmpegData {
                 this.logFFmpegProps = false;
                 $("#progress-indicator").css("display", "none");
                 $("#progress").css("width", "0%");
+                
             } else {
                 $("#error-message").css("display", "block");
                 $("#error-message").html("You're browser does not support running FFmpeg");

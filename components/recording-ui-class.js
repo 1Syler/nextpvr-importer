@@ -139,13 +139,43 @@ class recordingsDirectoryStructure {
 }
 
 class recordingUi extends recordingsDirectoryStructure {
+    constructor() {
+        super();
+    }
+    //
+    loadSavedLibrariesUi(libraries, storedLibraries) {
+        for(const library of libraries) {
+            const libraryUi = `
+                <div class="mt-2 container-fluid" style="background: black; padding: 15px; border-radius: 5px; border: solid 1px cornflowerblue;">
+                    <div class="row">
+                        <div style="color: white;" class="col-lg-6">
+                            ${library.rootDirName} - <i>Contains ${library.numRecordings} recordings</i>
+                        </div>
+                        <div style="color: white;" class="col-lg-3 offset-lg-3 text-right">
+                            <button type="button" id="${library.rootDirName}-${library.numRecordings}"\
+                             class="btn btn-primary btn-sm text-right">Open Library</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $("#library-box").append(libraryUi);
+            
+            const _self = this;
+            $(`#${library.rootDirName}-${library.numRecordings}`).click(async function(event) {
+                const lib = await storedLibraries.getLibrary(library.rootDirName);
+                console.log(library.rootDirName);
+                await _self.createDirectories(lib.getRecordings());
+                _self.createDirUi(false, false);
+            });
+        }
+    }
     // Called From:  file://browser-nativefs.js
     // dirs:         false - When setting all the directories without an additional data source
     // Called From:  file://start-recording-ffmpeg.js
     // dirs:         [] - The directories in the path of the current recording runnung in FFmpeg
     // Function:     Creates the directory UI for the given directories
     // Return:       None
-    createDirUi(dirs, file) {
+    async createDirUi(dirs, file) {
         // If no directories passed load all directories
         if(dirs === false) {
             dirs = this.directories;
@@ -432,7 +462,6 @@ class recordingUi extends recordingsDirectoryStructure {
     // Function:     Runs a user customr replace regex on each file name
     // Return:       none
     runCustomFilter(filter, propName, directories) {
-        console.log(directories);
         if(filter && propName) {
             // Check which directories have been selected
             for(const dir of directories) {
@@ -467,6 +496,11 @@ class recordingUi extends recordingsDirectoryStructure {
             }
         }
     }
+    
+    createLibraryUi(recordingsData) {
+    
+    }
 }
+
 
 

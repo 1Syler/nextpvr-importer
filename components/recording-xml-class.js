@@ -173,12 +173,24 @@ class recording {
 }
 
 class recordingsTemplate {
-    constructor(blobs) {
+    constructor(savedData) {
         this.dirSeparator = this.getPathSeperator();  // Set the directory path separator \ or /
         this.fullPath = "";                           // Full directory path of files
         this.rootDirName = "";                        // Last part of this.fullPath
         this.recordings = [];                         // An array of recording class instances
         this.numRecordings = 0;                       // The current recording number
+        
+        if(savedData !== false) {
+            this.loadTemplate(savedData);
+        }
+    }
+    
+    loadTemplate(savedData) {
+        this.dirSeparator = savedData.dirSeparator;
+        this.fullPath = savedData.fullPath;
+        this.rootDirName = savedData.rootDirName;
+        this.recordings = savedData.recordings;
+        this.numRecordings = savedData.numRecordings;
     }
     
     // Return the array of recordings
