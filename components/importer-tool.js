@@ -144,9 +144,8 @@ class importerTool {
             // Reset the progress bar if set
             $("#progress-indicator").css("display", "none");
             $("#progress").css("width", "0%");
-            const roughObjSize = JSON.stringify(this.library);
-            //console.log(roughSizeOfObject(this.library));
-            this.idb.saveLibrary({"idNum": 1, "obj": roughObjSize}).then((result) => {
+            
+            this.idb.saveLibrary(this.library).then((result) => {
             
             }).catch((error) => {
                 console.error(error);
@@ -266,36 +265,3 @@ class importerTool {
 }
 
 const importer = new importerTool();
-function roughSizeOfObject( object ) {
-
-    var objectList = [];
-    var stack = [ object ];
-    var bytes = 0;
-
-    while ( stack.length ) {
-        var value = stack.pop();
-
-        if ( typeof value === 'boolean' ) {
-            bytes += 4;
-        }
-        else if ( typeof value === 'string' ) {
-            bytes += value.length * 2;
-        }
-        else if ( typeof value === 'number' ) {
-            bytes += 8;
-        }
-        else if
-        (
-            typeof value === 'object'
-            && objectList.indexOf( value ) === -1
-        )
-        {
-            objectList.push( value );
-
-            for( var i in value ) {
-                stack.push( value[ i ] );
-            }
-        }
-    }
-    return bytes;
-}
