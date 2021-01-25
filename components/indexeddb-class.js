@@ -1,109 +1,79 @@
-class storedLibraries {
+class savedLibraries {
     constructor() {
-        this.DB_NAME = 'recording-template';
+        this.DB_NAME = 'recordingsLibrary';
         this.DB_VERSION = 1;
         this.DB_STORE_NAME = 'library';
         this.db = null;
-        this.libraries = [];
 
         if (!('indexedDB' in window)) {
             console.log('This browser doesn\'t support IndexedDB');
             return;
         }
     }
-    
-    loadLibraries(libraryUi) {
-        this.openDb().then((result) => {
-            this.getObjectStore().then((result) => {
-                for(const res of result) {
-                    this.libraries.push(new recordingsTemplate(res));
-                }
-                libraryUi.loadSavedLibrariesUi(this.libraries, this);
-            });
-        }).catch(console.error);
-    }
-    
-    async getLibrary(name){
-        for(const library of this.libraries) {
-        console.log(library.rootDirName);
-        console.log(name);
-            if(library.rootDirName == name) {
-                return library
-            }
-            return false;
-        }
-    }
 
     async openDb() {
-        var _self = this;
-        const prom = new Promise((resolve, reject) => {
-            var request = indexedDB.open(_self.DB_NAME, _self.DB_VERSION);
-            
+        const _self = this;
+        const promise = new Promise((resolve, reject) => {
+            const request = indexedDB.open(_self.DB_NAME, _self.DB_VERSION);
             request.onsuccess = (event) => {
-                console.log("openDb:");
                 _self.db = request.result;
                 resolve(request.result);
             }
             request.onerror = (event) => {
-                console.error("openDb:", event.target.errorCode);
-                reject(event);
+                reject(event.target.errorCode);
             }
             
             request.onupgradeneeded = (event) => {
-                console.log("openDb.onupgradeneeded");
                 _self.db = request.result;
-                var store = event.currentTarget.result.createObjectStore(_self.DB_STORE_NAME, { keyPath: 'id', autoIncrement: true });
-                var transaction = event.target.transaction;
+                const store = event.currentTarget.result.createObjectStore(_self.DB_STORE_NAME, { keyPath: 'idNum', autoIncrement: false });
+                const transaction = event.target.transaction;
                 
                 transaction.oncomplete = (event) => {
                     resolve(store);
                 }
             }
         });
-        return prom;
+        return promise;
     }
     
-    async getObjectStore() {
-        var _self = this;
-        const prom = new Promise((resolve, reject) => {
-            var transaction = _self.db.transaction(["library"], "readwrite");
-            var objectStore = transaction.objectStore("library");
-            var request = objectStore.getAll();
+    async getsavedLibraries() {
+        const _self = this;
+        const promise = new Promise((resolve, reject) => {
+            const transaction = _self.db.transaction([_self.DB_STORE_NAME], "readwrite");
+            const library = transaction.objectStore(_self.DB_STORE_NAME);
+            const request = library.getAll();
             
             request.onerror = (event) => {
-                // Handle errors!
-                reject(event);
+                reject(event.target.errorCode);
             };
             request.onsuccess = (event) => {
                 resolve(request.result);
             };
         });
-        return prom;
+        return promise;
     }
     
-    async saveLibrary(template) {
-        var _self = this;
-        const prom = new Promise((resolve, reject) => {
-            var transaction = _self.db.transaction(["library"], "readwrite");
+    async saveLibrary(library) {
+        console.log(library);
+        const _self = this;
+        const promise = new Promise((resolve, reject) => {
+            const transaction = _self.db.transaction([_self.DB_STORE_NAME], "readwrite");
+            const objStore = transaction.objectStore(_self.DB_STORE_NAME);
+            const request = objStore.add(library);
             
             // Do something when all the data is added to the database.
             transaction.oncomplete = function(event) {
-                console.log("All done!");
+                resolve();
             };
 
             transaction.onerror = function(event) {
-                // Don't forget to handle errors!
+                reject(event.target.error);
             };
 
-            var objectStore = transaction.objectStore("library");
-            var request = objectStore.add(template);
             request.onsuccess = function(event) {
-                // event.target.result
+                resolve();
             };
         });
-        return prom;
+        return promise;
     }
 }
-
-
-

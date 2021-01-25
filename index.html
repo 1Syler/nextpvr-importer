@@ -39,9 +39,13 @@
                             <button type="button" id="open-directory" class="btn btn-info btn-sm"\
                             placeholder="/home/user/videos/" disabled>Open Directory</button>
                         </div>
-                        <div class="col-lg-9">
+                        <div class="col-lg-6">
                             <input type="text" id="dirPath" class="form-control form-control-sm"\
                              placeholder="Full Directory Path">
+                        </div>
+                        <div class="col-lg-3">
+                            <input type="text" id="library-name" class="form-control form-control-sm"\
+                             placeholder="Library Name">
                         </div>
                     </div>
                     
@@ -306,10 +310,11 @@
     
     <script type="text/javascript" src='./vendor/ffmpeg/ffmpeg.min.js'></script>
     <script type="text/javascript" src='./components/indexeddb-class.js'></script>
-    <script type="text/javascript" src='./components/recording-xml-class.js'></script>
+    <script type="text/javascript" src='./components/recording-data-class.js'></script>
     <script type="text/javascript" src='./components/recording-ui-class.js'></script>
     <script type="text/javascript" src='./components/data-source-ffmpeg-class.js'></script>
     <!--<script type="text/javascript" src='./components/data-source-itunes-class.js'></script>-->
+    <script type="text/javascript" src='./components/importer-tool.js'></script>
     <script type="module" src="./vendor/browser-nativefs/browser-nativefs.js"></script>
     
     <script>
@@ -335,4 +340,3 @@
     
     </body>
 </html>
-

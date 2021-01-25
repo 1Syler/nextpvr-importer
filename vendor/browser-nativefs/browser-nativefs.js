@@ -22,14 +22,6 @@ import {
 (async () => {  
     const openDirectoryButton = document.querySelector('#open-directory');
     const saveButton = document.querySelector('#save');
-    const filterButton = document.querySelector('#run-filter');
-    
-    // Load classes
-    const template = new recordingsTemplate(false);
-    const ffmpeg = new ffmpegData();
-    const libraryUi = new recordingUi();
-    const libraries = new storedLibraries();
-    libraries.loadLibraries(libraryUi);
     
     openDirectoryButton.addEventListener('click', async () => {
         try {
@@ -48,21 +40,8 @@ import {
                 }
                 return 0;
             });
-            const dataSourceOpt = $('input[name="data-source"]:checked').val();
-            template.addRecordings(blobs, dataSourceOpt);
-            console.log(template);
-            
-            // Gather other data if user has selected a data source option
-            await libraryUi.createDirectories(template.getRecordings());
-            if(dataSourceOpt == 0) {
-                libraries.saveLibrary(template);
-                libraryUi.createDirUi(false, false);
-                filterButton.disabled = false;
-            } else if(dataSourceOpt == 1) {
-                ffmpeg.runFfmpeg(template.getRecordings(), libraryUi)
-            } else if(dataSourceOpt == 2) {
-                //testapicall(blobs);
-            }
+            // Run importer tool
+            importer.createLibrary(blobs);
             
         } catch (err) {
             if (err.name !== 'AbortError') {
@@ -89,4 +68,3 @@ import {
     openDirectoryButton.disabled = false;
     saveButton.disabled = false;
 })();
-
