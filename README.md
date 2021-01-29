@@ -1,3 +1,5 @@
+4920Xc20Xf207X20X5207920Xf2075204120X220X22079
+
 # nextpvr-importer
 
 NextPVR allows you to add your own video files to the recordings list by importing an XML file. If you have lots of videos it could take a long time to create the XML file so I have created this to automate the process.
