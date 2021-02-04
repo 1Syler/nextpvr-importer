@@ -41,7 +41,9 @@ You can also view and edit a files properties individually.
 When you add a library it will check if any of the folders contains a series. If it detects a series it will create uniformly formated series details:
 
 **Series folder**: Series name only
+
 **Season folders**: Season 1, Season 2, Season 3, etc
+
 **Episode Files**: S01E01 - Name, S01E02 - Name, etc
 
 The episode files name will contain the season+episode number and the episode name, if both are included in the file name, otherwise it will contain whichever one is in the file name. Any missing details will be added when using the iTunes data source, which is not currently implemented.
