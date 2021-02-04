@@ -10,10 +10,10 @@ class recordingsUi {
                 <div class="mt-2 container-fluid" style="background: black; padding: 15px; border-radius: 5px; border: solid 1px cornflowerblue;">
                     <div class="row">
                         <div style="color: white;" class="col-lg-6">
-                            ${library.rootDirName} - <i>Contains ${library.numRecordings} recordings</i>
+                            ${library.libraryName} - <i>Contains ${library.numRecordings} recordings</i>
                         </div>
                         <div style="color: white;" class="col-lg-3 offset-lg-3 text-right">
-                            <button type="button" id="${library.rootDirName}-${library.numRecordings}"\
+                            <button type="button" id="${library.libraryName}-${library.numRecordings}"\
                              class="btn btn-primary btn-sm text-right">Open Library</button>
                         </div>
                     </div>
@@ -21,13 +21,26 @@ class recordingsUi {
             `;
             $("#library-box").append(libraryUi);
             
-            ///const _self = this;
-            $(`#${library.rootDirName}-${library.numRecordings}`).click(async function(event) {
-                //const lib = await storedLibraries.getLibrary(library.rootDirName);
-                //console.log(library.rootDirName);
-                //await _self.createDirectories(lib.getRecordings());
-                //_self.createDirUi(false, false);
+            const _self = this;
+            $(`#${library.libraryName}-${library.numRecordings}`).click(async function(event) {
+                //importer.library = library;
+                _self.loadSavedLibrary(library);
             });
+        }
+    }
+    
+    // Called From:  file://recording-ui-class.js - createSavedLibrariesUi() event listner
+    // library       A saved recordingsLibrary instance
+    // Function:     Creates a recordings library UI from a saved library
+    async loadSavedLibrary(library) {
+        $(`#user-output`).html("");
+        for(const directory of library.directories) {
+            if($(`#${directory.pathId}`).length == 0) {
+                await this.createDirUi(directory);
+            }
+            for(const file of directory.files) {
+                this.createFileUi(file, directory.pathId);
+            }
         }
     }
     
@@ -35,24 +48,27 @@ class recordingsUi {
     // dir:          A recording directory instance
     // Function:     Creates the directory UI for the given directory and sub directories
     async createDirUi(dir) {
-        const folderArrowUp = '<i class="fa fa-angle-up float-right adjust-position-arrow"></i>';
-        const folderArrowDown = '<i class="fa fa-angle-down float-right adjust-position-arrow"></i>';
+        const folderArrowUp = `<i class="fa fa-angle-up float-right adjust-position-arrow" data-toggle="collapse" href="#collapse${dir.dirId}"></i>`;
+        const folderArrowDown = `<i class="fa fa-angle-down float-right adjust-position-arrow" data-toggle="collapse" href="#collapse${dir.dirId}"></i>`;
         const folderPanel = `
             <div class="panel-group">
                 <div id="${dir.pathId}-panel" class="panel panel-default">
                     <div class="panel-heading">
                         <h4 class="panel-title">
-                            <span class="adjust-panel-heading" data-toggle="collapse" href="#collapse${dir.dirId}">
+                            <span class="adjust-panel-heading">
                                 <i class="fa fa-folder mr-4 adjust-position"></i>
                                 <b class="adjust-position" >${dir.dirName}</b>
                                 <span id="${dir.pathId}-badge" class="badge badge-light ml-2">
                                 ${dir.numFiles + dir.numFolders}
                                 </span>
                                 <span id="${dir.pathId}-arrow">
-                                    <i class="fa fa-angle-up float-right adjust-position-arrow"></i>
+                                    <i class="fa fa-angle-up float-right adjust-position-arrow" data-toggle="collapse" href="#collapse${dir.dirId}"></i>
                                 </span>
                                 <span id="${dir.pathId}-select-folder">
                                     <i class="fa fa-check-circle float-right adjust-position-arrow pr-3"></i>
+                                </span>
+                                <span id="${dir.pathId}-open-series">
+                                    
                                 </span>
                             </span>
                         </h4>
@@ -86,7 +102,6 @@ class recordingsUi {
                 const selectIcon = $(`#${dir.pathId}-panel #${dir.pathId}-select-folder i`);
                 const isSelected = selectIcon.css("color") == "rgb(0, 128, 0)";
                 _self.selectDirectories([dir], isSelected);
-                event.stopPropagation();
             }
         });
         
@@ -298,4 +313,39 @@ class recordingsUi {
         const video = document.getElementById('player');
         video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
     }*/
+    
+    addSeriesFolderIcon(dir) {
+        const seriesIcon = `<i style="color: chartreuse;" class="fa fa-list-alt float-right adjust-position-arrow pr-3"\
+        data-toggle="modal" data-target="#series-modal" aria-hidden="true"></i>`;
+        $(`#${dir.pathId}-open-series`).html(seriesIcon);
+        
+        const _self = this;
+        $(`#${dir.pathId}-panel #${dir.pathId}-open-series i`).click(function(event) {
+            _self.openSeriesUi(dir);
+        });
+    }
+    
+    // Called From:  Event handler in this.createFileUi()
+    // file:         ..
+    // Function:     ..
+    async openSeriesUi(dir) {
+        let seriesUi = `
+            <div id="recording-series-${dir.dirId}" class="recording-series-ui p-3">
+                <h1>${dir.seriesDetails.name}</h1>
+            </div>
+        `;
+        $(`#series-editor`).html(seriesUi);
+        
+        for(const seasonDir of dir.seriesDetails.seasons) {
+            const dirName = seasonDir.dirName;
+            const dirId = seasonDir.dirId;
+            const seasonHeading = `<div id="recording-season-${dirId}" class="series-season-header">${dirName}</div>`;
+            $(`#recording-series-${dir.dirId}`).append(seasonHeading);
+            
+            for(const episode in seasonDir.episodes) {
+                const episodeHeading = `<div class="series-episode-header">${seasonDir.episodes[episode]}</div>`;
+                $(`#recording-season-${dirId}`).after(episodeHeading);
+            }
+        }
+    }
 }

@@ -91,3 +91,16 @@
     display: inline;
 }
 
+.series-season-header {
+    font-weight: 700;
+    padding: 10px 10px 10px 0;
+    border-bottom: solid 1px black;
+}
+
+.series-episode-header {
+    padding: 10px 10px 10px 0;
+    margin-left: 10px;
+    border-bottom: dotted 1px slategrey;
+}
+
+

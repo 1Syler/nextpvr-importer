@@ -33,8 +33,8 @@ class importerTool {
         const _self = this;
         this.filterButton = $('#run-filter');
         $(`#run-filter`).click(function() {
-            let filter = $("#custom-filter").val();
-            let propName = $("#prop-name").val();
+            const filter = $("#custom-filter").val();
+            const propName = $("#prop-name").val();
             _self.runCustomFilter(filter, propName, _self.library.directories);
         });
     }
@@ -46,7 +46,7 @@ class importerTool {
         this.idb.openDb().then((result) => {
             this.idb.getsavedLibraries().then((libraries) => {
                 for(const library of libraries) {
-                    this.savedLibraries.push(new recordingsLibrary(library));
+                    this.savedLibraries.push(library);
                 }
                 this.library.idNum = this.savedLibraries.length;
                 
@@ -87,40 +87,101 @@ class importerTool {
         }
     }
     
-    async createLibrary(blobs) {
-        const inputSuccess = this.setUserInput();
-        this.setButtonState(true);
-
-        let recCount = 0;
-        let numRecs = blobs.length;
-        if(this.userInput.dataSourceOpt == 1) {
-            $("#progress-indicator").css("display", "block");
-            $(".progress-bar-title").html(`<span id="file-progress">FFmpeg Loading...</span>`);
-            $("#progress").css("width", Math.floor(100 / numRecs * recCount) + "%");
-            this.ffmpeg = new ffmpegData();
-            await this.ffmpeg.loadFfmpeg();
+    // Called From:  constructor() event listner
+    // filter        A user input regular expression /[^a-z ]/g
+    // propName      The recording property name to filter
+    // directories   An array of all the libraries directories
+    // Function:     Runs a user replace regex on each on the selected property in the selected folders
+    runCustomFilter(filter, propName, directories) {
+        // Check that filter and property were input
+        if(filter && propName) {
+            const stringToRegex = str => {
+                // Main regex
+                const main = str.match(/\/(.+)\/.*/)[1];
+                // Regex options
+                const options = str.match(/\/.+\/(.*)/)[1];
+                // Compiled regex
+                return new RegExp(main, options);
+            }
+            
+            for(const dir of directories) {
+                // Only apply the filter to files in selected directories
+                if(dir.selected === true) {
+                    try {
+                        for(const file of dir.files) {
+                            // Set the file properties new value
+                            let propVal = file.recordingXmlVals[propName].replace(stringToRegex(filter), "");
+                            file.recordingXmlVals[propName] = propVal;
+                            
+                            // Reload the file UI with the change
+                            this.libraryUi.createFileUi(file, dir.pathId);
+                        }
+                        $("#error-message").css("display", "none");
+                        
+                    } catch(err) {
+                        console.error(err);
+                        $("#error-message").css("display", "block");
+                        $("#error-message").html("The regex filter is invalid!");
+                    }
+                }
+            }
+        } else {
+            //displayErrorToUser()
+            $("#error-message").css("display", "block");
+            $("#error-message").html("You need to select a property and input a regex string");
         }
+    }
+    
+    // Called From:  file://browser-nativefs.js - On directory open
+    // blobs         An array of file blobs
+    // Function:     Creates a library or adds to an existing library
+    async createLibrary(blobs) {
+        // Set the user input
+        const inputSuccess = this.setUserInput();
+        // Disable all inputs whilst creating the library
+        this.setButtonState(true);
         
+        // If all the user input is valid add the recording to the library
         if(inputSuccess === true) {
+            // Set the progress counters
+            let recCount = 0;
+            let numRecs = blobs.length;
+            // If the user has selected to run FFmpeg create progress UI and load FFmpeg
+            if(this.userInput.dataSourceOpt == 1) {
+                $("#progress-indicator").css("display", "block");
+                $(".progress-bar-title").html(`<span id="file-progress">FFmpeg Loading...</span>`);
+                $("#progress").css("width", Math.floor(100 / numRecs * recCount) + "%");
+                if(this.ffmpeg == null) {
+                    this.ffmpeg = new ffmpegData();
+                    await this.ffmpeg.loadFfmpeg();
+                }
+            }
+            
+            // Add each recording to the library
             for(const blob of blobs) {
-                // Add each recording and return an object with recording data
+                // Create directory and file instances for the recording and return an object with recording data
                 const recordingData = await this.library.addRecording(blob, this.userInput, this.libraryNum);
                 
                 // Get details from a data source if selected
                 if(this.userInput.dataSourceOpt == 1) {
+                    // Check if it is a video file
                     if(blob.type.startsWith('video/') || this.library.checkMimeTypeStr(blob.name)) {
+                        // Set the progress indicator for the current file
                         $(".progress-bar-title").html(`FFmpeg checking file: <span id="file-progress">\
                         ${this.library.recordings[recCount].recordingXmlVals.name}</span>`);
-                        await this.ffmpeg.runFfmpeg(this.library.recordings[recCount]);
+                        
+                        // Get the recording data from FFmpeg
+                        await this.ffmpeg.runFfmpeg(this.library.getRecording(blob.webkitRelativePath), blob);
                         recCount++;
                     } else {
+                        // Not a valid recording to reduce the recordings count
                         numRecs--;
                     }
                 } else if(this.userInput.dataSourceOpt == 2) {
                     //iTunes.func(blobs);
                 }
                 
-                // Creating UI for current file and directories
+                // If the recording is a valid file type create the UI
                 if(recordingData !== false) {
                     // If the directory UI doesn't exist create it
                     if(recordingData.newDir === true) {
@@ -139,63 +200,74 @@ class importerTool {
                     }
                 }
             }
-            this.setFirstRunStatus(this.library.directories);
-            
             // Reset the progress bar if set
             $("#progress-indicator").css("display", "none");
             $("#progress").css("width", "0%");
             
-            this.idb.saveLibrary(this.library).then((result) => {
+            // Set the first run status for all the directories currently in the library
+            this.setFirstRunStatus(this.library.directories);
             
-            }).catch((error) => {
+            // ADD IF FIRST RUN IS TRUE SO THAT IT IS ONLY CHECKED ONCE
+            for(const dir of this.library.directories) {
+                if(this.library.detectSeries(dir)) {
+                    this.libraryUi.addSeriesFolderIcon(dir);
+                }
+            }
+            
+            /*this.idb.saveLibrary(this.library).catch((error) => {
                 console.error(error);
-            });
+            });*/
             console.log(this.library);
-            
-        } else {
-            alert(`There was an error with ${inputSuccess}`);
         }
         this.setButtonState(false);
     }
     
+    // Called From:  this.createLibrary()
+    // directories   An array of the libraries current directories
+    // Function:     Sets a status for the current directories so that the recordings
+    //               UI is recreated if adding a new recording to the directory
     setFirstRunStatus(directories) {
         for(const dir of directories) {
             dir.firstRun = false;
         }
     }
     
-    // Called From:  createLibrary()
+    // Called From:  this.createLibrary()
     // Function:     Validates and sets the user input
-    // Return:       Error name if there was an error, true if all inputs were set
+    // Return:       False if there was an error, true if all inputs were set
     setUserInput() {
-        // Validate inputs
-        let error = false;
+        const fullPath = this.validateFullPath($('#dirPath').val());
+        const libraryName = $("#library-name").val();
+        const title = $("#title-input").val();
+        const subTitle = $("#sub-title-input").val();
+        const dummyTime = $("#dummy-time").val();
+        const genreOption = $("#genre-input").val();
+        const dataSourceOpt = $('input[name="data-source"]:checked').val();
+        const filterOption = $('input[name="filter-opt"]:checked').val();
         
-        (this.validateFullPath($('#dirPath').val()) !== false) 
-        ? this.userInput.fullPath = this.validateFullPath($('#dirPath').val()) : error = "Directory Path";
-        ($("#library-name").val() !== "") 
-        ? this.userInput.libraryName = $("#library-name").val() : error = "Library Name";
-        this.userInput.title = $("#title-input").val();
-        this.userInput.subTitle = $("#sub-title-input").val();
-        
-        (/^\d\d:[0-5]\d:[0-5]\d$/.test($("#dummy-time").val()))
-        ? this.userInput.dummyDuration = $("#dummy-time").val() : this.userInput.dummyDuration = "02:00:00";
-        
-        this.userInput.genreOption = $("#genre-input").val();                           // Select option
-        this.userInput.dataSourceOpt = $('input[name="data-source"]:checked').val();    // Radio button option
-        this.userInput.filterOption = $('input[name="filter-opt"]:checked').val();      // Radio button option
-        
-        if(error !== false) {
-            // displayErrorToUser(error);
-            return error;
-        }
+        this.userInput.fullPath = fullPath;
+        this.userInput.libraryName = libraryName;
+        this.userInput.title = title;
+        this.userInput.subTitle = subTitle;
+        this.userInput.dummyDuration = dummyTime;
+        this.userInput.genreOption = genreOption;
+        this.userInput.dataSourceOpt = dataSourceOpt;
+        this.userInput.filterOption = filterOption;
+        //if(fullPath !== false) { this.userInput.fullPath = fullPath; } else { return false;/*diplayErrorToUser()*/ }
+        //if(libraryName) { this.userInput.libraryName = libraryName; } else { return false;/*diplayErrorToUser()*/ }
+        //if(title) { this.userInput.title = title; } else { return false;/*diplayErrorToUser()*/ }
+        //if(subTitle) { this.userInput.subTitle = subTitle; } else { return false;/*diplayErrorToUser()*/ }
+        //if(/^\d\d:[0-5]\d:[0-5]\d$/.test(dummyTime)) { this.userInput.dummyTime = dummyTime; } else { return false;/*diplayErrorToUser()*/ }
+        //if(genreOption) { this.userInput.genreOption = genreOption; } else { return false;/*diplayErrorToUser()*/ }
+        //if(dataSourceOpt) { this.userInput.dataSourceOpt = dataSourceOpt; } else { return false;/*diplayErrorToUser()*/ }
+        //if(filterOption) { this.userInput.filterOption = filterOption; } else { return false;/*diplayErrorToUser()*/ }
         return true;
     }
     
     // Called From:  this.setUserInput()
     // dir:          The user input full directory path
     // Function:     Adds a seperator to the end of this.fullPath if it doesn't have one
-    // Return:       The root directory ending with the directory separator
+    // Return:       The full directory path ending with the directory separator
     //               or a false if no path was input
     validateFullPath(dir) {
         if(dir) {
@@ -207,55 +279,9 @@ class importerTool {
         return false;
     }
     
-    loadLirary(library) {
-        //this.library = library
-        //this.userInput = library.userInput
-        //this.createLibraryUi();
-    }
-    
-    // Called From:  constructor() event listner
-    // filter        A user input regular expression /[^a-z ]/g
-    // propName      The recording property name
-    // Function:     Runs a user customr replace regex on each file name
-    runCustomFilter(filter, propName, directories) {
-        if(filter && propName) {
-            // Check which directories have been selected
-            for(const dir of directories) {
-                // Apply filter to files in selected directory
-                if(dir.selected === true) {
-                    try {
-                        const stringToRegex = str => {
-                            // Main regex
-                            const main = str.match(/\/(.+)\/.*/)[1]
-                            
-                            // Regex options
-                            const options = str.match(/\/.+\/(.*)/)[1]
-                            
-                            // Compiled regex
-                            return new RegExp(main, options)
-                        }
-                        
-                        for(const file of dir.files) {
-                            let propVal = file.recordingXmlVals[propName].replace(stringToRegex(filter), "");
-                            file.recordingXmlVals[propName] = propVal;
-                            this.libraryUi.createFileUi(file, dir.pathId);
-                        }
-                        $("#error-message").css("display", "none");
-                        
-                    } catch(err) {
-                        console.error(err);
-                        $("#error-message").css("display", "block");
-                        $("#error-message").html("The regex filter is invalid!");
-                    }
-                }
-            }
-        } else {
-            $("#error-message").css("display", "block");
-            $("#error-message").html("You need to select a property and input a regex string");
-        }
-    }
-    
-    // Disable buttons when adding recordings enable them again after
+    // Called From:  this.createLibrary()
+    // state:        True or false
+    // Function:     Disable or enable all buttons and inputs
     setButtonState(state) {
         document.getElementById(`run-filter`).disabled = state;
         document.getElementById(`dirPath`).disabled = state;
@@ -265,3 +291,8 @@ class importerTool {
 }
 
 const importer = new importerTool();
+
+/*//
+function displayErrorToUser() {
+
+}*/

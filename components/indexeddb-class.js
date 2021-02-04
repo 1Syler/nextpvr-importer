@@ -7,7 +7,6 @@ class savedLibraries {
 
         if (!('indexedDB' in window)) {
             console.log('This browser doesn\'t support IndexedDB');
-            return;
         }
     }
 
@@ -54,7 +53,6 @@ class savedLibraries {
     }
     
     async saveLibrary(library) {
-        console.log(library);
         const _self = this;
         const promise = new Promise((resolve, reject) => {
             const transaction = _self.db.transaction([_self.DB_STORE_NAME], "readwrite");

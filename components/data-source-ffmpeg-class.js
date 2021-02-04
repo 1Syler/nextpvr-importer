@@ -13,37 +13,36 @@ class ffmpegData {
     }
     
     async loadFfmpeg() {
-        if(this.ffmpeg == null) {
-            //Initialise FFmpeg
-            const { createFFmpeg, fetchFile } = FFmpeg;
-            this.ffmpeg = createFFmpeg({ log: false });
-            this.fetchFile = fetchFile;
-            const type = "ffinfo";
+        console.log("here");
+        //Initialise FFmpeg
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        this.ffmpeg = createFFmpeg({ log: false });
+        this.fetchFile = fetchFile;
+        const type = "ffinfo";
+        
+        this.ffmpeg.setLogger(({ type, message }) => {
+            // Uncomment to view FFmpeg output
+            console.log(message);
             
-            this.ffmpeg.setLogger(({ type, message }) => {
-                // Uncomment to view FFmpeg output
-                console.log(message);
-                
-                // Only check the logs when adding the recording
-                if(this.logFFmpegProps) {
-                    if(message.search(this.propFilters.startTime) > -1) {
-                        this.recording.setStartTimeProps(message, this.propFilters.startTime);
-                    }
-                    if(message.search(this.propFilters.duration) > -1) {
-                        this.recording.setDurationProp(message, this.propFilters.duration);
-                    }
-                    if(message.search("FFMPEG_END") > -1) {
-                        // At the end of the recording check the startTime and duration property
-                        // If they are null set them and set endTime final properties
-                        this.recording.setEndTimeProp();
-                    }
+            // Only check the logs when adding the recording
+            if(this.logFFmpegProps) {
+                if(message.search(this.propFilters.startTime) > -1) {
+                    this.recording.setStartTimeProps(message, this.propFilters.startTime);
                 }
-            });
-            await this.ffmpeg.load();
-        }
+                if(message.search(this.propFilters.duration) > -1) {
+                    this.recording.setDurationProp(message, this.propFilters.duration);
+                }
+                if(message.search("FFMPEG_END") > -1) {
+                    // At the end of the recording check the startTime and duration property
+                    // If they are null set them and set endTime final properties
+                    this.recording.setEndTimeProp();
+                }
+            }
+        });
+        await this.ffmpeg.load();
     }
     
-    async runFfmpeg(recording, numRecs, progNum) {
+    async runFfmpeg(recording, blob) {
         this.logFFmpegProps = true;
         try {
             if(this.ffmpegSupport === true) {
@@ -51,17 +50,16 @@ class ffmpegData {
                 if(recording.ffmpegStatus == null || recording.ffmpegStatus == false) {
                     try {
                         this.recording = recording;
-                        let blob = recording.blob;
-                        let name = blob.name;
+                        const name = blob.name;
                         
                         this.ffmpeg.FS('writeFile', name, await this.fetchFile(blob));
                         await this.ffmpeg.run("-i", name);
                         this.ffmpeg.FS('unlink', name);
                         recording.ffmpegStatus = true;
                         
-                    } catch (err) {
+                    } catch(err) {
                         recording.ffmpegStatus = false;
-                        console.error(`[ERROR] Error couldn't get FFmpeg details for '${recording.blob.name}': ${err}`);
+                        console.error(`[ERROR] Error couldn't get FFmpeg details for '${blob.name}': ${err}`);
                     }
                 }
             } else {

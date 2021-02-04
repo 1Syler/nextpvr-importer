@@ -51,7 +51,7 @@ import {
     });  
 
     saveButton.addEventListener('click', async () => {
-        let blob = new Blob(template.getRecordingsXML(), {type: 'text/xml'});
+        let blob = new Blob(importer.library.getRecordingsXML(), {type: 'text/xml'});
 
         try {
             await fileSave(blob, {
