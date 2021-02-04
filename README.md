@@ -38,6 +38,15 @@ You can also view and edit a files properties individually.
 ![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/edit-file.png)
 ![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/edited-file.png)
 
+When you add a library it will check if any of the folders contains a series. If it detects a series it will create uniformly formated series details:
+
+**Series folder**: Series name only
+**Season folders**: Season 1, Season 2, Season 3, etc
+**Episode Files**: S01E01 - Name, S01E02 - Name, etc
+
+The episode files name will contain the season+episode number and the episode name, if both are included in the file name, otherwise it will contain whichever one is in the file name. Any missing details will be added when using the iTunes data source, which is not currently implemented.
+
+![alt text](https://github.com/1Syler/nextpvr-importer/blob/main/readme/series-details.png)
 
 Running with FFmpeg as the data source will check the file to get an accurate startTime and endTime, this can be done after creating a library with no options. iTunes data source is a work in progress.
 
@@ -56,7 +65,7 @@ On Chrome it will run through all files and add them to the list but it may have
 Bug reported https://github.com/ffmpegwasm/ffmpeg.wasm/issues/144
 
 ## TODO
-* Add detection of series and create structured series data that can be used when getting data from an API source - Work on almost all off my series library with a couple of things to add, also need to sort the order of seasons and episodes
+* Add detection of series and create structured series data that can be used when getting data from an API source - Works on almost all of my series library with a couple of things to add, also need to sort the order of seasons and episodes
 * Implement saving data to IndexedDB - WIP - Now working but incomplete and buggy. Not working on Firefox
 * Once the data is saved can implement rescanning for files that failed to be read by FFmpeg
 * Grab details file details from other sources as addition/alternative to FFmpeg when it fails - WIP
