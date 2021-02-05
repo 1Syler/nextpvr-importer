@@ -286,7 +286,7 @@ class recordingsLibrary {
         
         // These filter will be searched in a loop removing anything in the string that comes after the filter
         this.junkFilters = [
-            "DVDRip", "BrRip", "BDRip", "HDRip", "HDTV", "BluRay", "WEBRip", "WEB-HD", "WEB", "480p", "720p", "1080p", 
+            "DVDRip", "BrRip", "BDRip", "HDRip", "HDTV", "BluRay", "WEBRip", "WEB-HD", "WEB", "400p", "480p", "720p", "1080p", 
             "x264", "x265", "Xvid", "AC3"//, " (", "(", " [", "[", " {", "{"
         ];
         
@@ -324,14 +324,15 @@ class recordingsLibrary {
             "/season [0-9] episode [0-9]/i",       // season 1 episode 1
             "/season [0-9]{2} episode [0-9]{2}/i", // season 10 episode 10
             "/season[0-9] episode[0-9]/i",         // season1 episode1
-            "/episode [0-9]/i",                    // episode 1
+            "/episode [0-9]{2}/i",                 // episode 1
             "/episode[0-9]/i",                     // episode1
             "/part [0-9]/i",                       // part 1
             "/part[0-9]/i",                        // part1
-            "/0[0-9]0[0-9]/",                      // 0101
-            //"/[0-9]0[0-9]/",                     // 101
-            "/[0-9]{2} - /",                       // 01 - 
-            "/[0-1][0-9]{2}-/",                    // 001- 
+            "/[0-9]{4}/",                          // 1111 - Check that it doesn't match a year string
+            "/^[0-9]{3} /",                        // 101
+            "/^[0-9]{2} - /",                      // 01 - - At the begining of the string
+            "/^[0-9]{2} /",                        // 01 - At the begining of the string
+            "/^[0-1][0-9]{2}-/",                   // 001- 
             "/[0-9] [0-9]{2}/i",                   // 1 01
             "/[0-9] [0-9]/i"                       // 1 1
         ];
@@ -416,7 +417,7 @@ class recordingsLibrary {
     
     // Called In:
     // name
-    filterEpisodeName(name, seriesName) {
+    filterEpisodeName(name, seriesName, dirName) {
         // Remove the file extension
         const fileMime = this.checkMimeTypeStr(name);
         let episode = name.substr(0, name.lastIndexOf(fileMime));
@@ -424,7 +425,7 @@ class recordingsLibrary {
         // Remove non alphanumeric characters
         episode = episode.replace(/\./g, " ");
         episode = episode.replace(/_/g, " ");
-        episode = episode.replace(/[^a-zA-Z0-9 ]/g, "");
+        episode = episode.replace(/[^a-zA-Z0-9-', ]/g, "");
         const nameStr = episode.toLowerCase();
         
         for(const filter of this.junkFilters) {
@@ -456,41 +457,83 @@ class recordingsLibrary {
             }
         }
         
+        episode = episode.trim();
+        
         for(const filter of this.fileFilters) {
             if(this.stringToRegex(filter).test(episode)) {
                 const filterStart = episode.search(this.stringToRegex(filter));
                 
                 if(filter === "/s[0-9]{2}e[0-9]{2}/i") { // Default string make uppercase
                     let episodeStr = episode.substr(filterStart, 6).toUpperCase();
-                    episode = episode.replace(this.stringToRegex(filter), episodeStr);
+                    
+                    if(episode[filterStart + 6] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `${episodeStr} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), episodeStr);
+                    }
                 } else if(filter === "/s[0-9]{2} e[0-9]{2}/i") {
                     const seasonNum = episode.substr(filterStart + 1, 2);
                     const episodeNum = episode.substr(filterStart + 5, 2);
-                    episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum}`);
+                    
+                    if(episode[filterStart + 7] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum}`);
+                    }
                 } else if(filter === "/s[0-9]{2}e[0-9]/i") {
                     const seasonNum = episode.substr(filterStart + 1, 2);
                     const episodeNum = episode.substr(filterStart + 5, 1);
-                    episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E0${episodeNum}`);
+                    
+                    if(episode[filterStart + 6] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E0${episodeNum} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E0${episodeNum}`);
+                    }
                 } else if(filter === "/s[0-9]e[0-9]{2}/i") {
                     const seasonNum = episode.substr(filterStart + 1, 1);
                     const episodeNum = episode.substr(filterStart + 4, 2);
-                    episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E${episodeNum}`);
+                    
+                    if(episode[filterStart + 6] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E${episodeNum} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E${episodeNum}`);
+                    }
                 } else if(filter === "/s[0-9] e[0-9]/i") {
                     const seasonNum = episode.substr(filterStart + 1, 1);
                     const episodeNum = episode.substr(filterStart + 4, 1);
-                    episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum}`);
+                    
+                    if(episode[filterStart + 5] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum}`);
+                    }
                 } else if(filter === "/season [0-9]{2} episode [0-9]{2}/i") {
                     const seasonNum = episode.substr(filterStart + 8, 2);
                     const episodeNum = episode.substr(filterStart + 19, 2);
-                    episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum}`);
+                    
+                    if(episode[filterStart + 21] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum}`);
+                    }
                 } else if(filter === "/season [0-9] episode [0-9]/i") {
                     const seasonNum = episode.substr(filterStart + 8, 1);
                     const episodeNum = episode.substr(filterStart + 18, 1);
-                    episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum}`);
+                    
+                    if(episode[filterStart + 19] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum}`);
+                    }
                 } else if(filter === "/[0-9]{2}x[0-9]{2}/i") {
                     const seasonNum = episode.substr(filterStart, 2);
                     const episodeNum = episode.substr(filterStart + 3, 2);
-                    episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum}`);
+                    
+                    if(episode[filterStart + 5] == '-') {
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum} `);
+                    } else{
+                        episode = episode.replace(this.stringToRegex(filter), `S${seasonNum}E${episodeNum}`);
+                    }
                 } else if(filter === "/[0-9]x[0-9]{2}/i") {
                     const seasonNum = episode.substr(filterStart, 1);
                     const episodeNum = episode.substr(filterStart + 2, 2);
@@ -500,6 +543,69 @@ class recordingsLibrary {
                     const episodeNum = episode.substr(filterStart + 2, 2);
                     episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E${episodeNum}`);
                 } else if(filter === "/[0-9] [0-9]/i") {
+                    const seasonNum = episode.substr(filterStart, 1);
+                    const episodeNum = episode.substr(filterStart + 2, 1);
+                    episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum}`);
+                } else if(filter === "/[0-9]{4}/") {
+                    const startFilter = "/^[0-9]{4}/";
+                    const filterStart = episode.search(this.stringToRegex(startFilter));
+                    
+                    if(this.stringToRegex(startFilter).test(episode)) {
+                        const episodeStr = episode.substr(filterStart, 4);
+                        
+                        if(this.getRecordingYear([episodeStr]) === false) {
+                            const seasonNum = episode.substr(filterStart, 2);
+                            const episodeNum = episode.substr(filterStart + 2, 2);
+                            episode = episode.replace(this.stringToRegex(startFilter), `S${seasonNum}E${episodeNum}`);
+                        }
+                    } else {
+                        continue;
+                    }
+                } else if(filter === "/part [0-9]/i") {
+                    let seasonNum = dirName.replace(/[^0-9]/g, "");
+                    (seasonNum.length === 1) ? seasonNum = `S0${seasonNum}` : `S${seasonNum}`;
+                    
+                    if(seasonNum !== "") {
+                        const episodeNum = episode.substr(filterStart + 5, 1);
+                        episode = episode.replace(this.stringToRegex(filter), `${seasonNum}E0${episodeNum}`);
+                    }
+                } else if(filter === "/episode [0-9]{2}/i") {
+                    let seasonNum = dirName.replace(/[^0-9]/g, "");
+                    (seasonNum.length === 1) ? seasonNum = `S0${seasonNum}` : `S${seasonNum}`;
+                    
+                    if(seasonNum !== "") {
+                        const episodeNum = episode.substr(filterStart + 8, 2);
+                        episode = episode.replace(this.stringToRegex(filter), `${seasonNum}E${episodeNum}`);
+                    }
+                } else if(filter === "/^[0-9]{2} /") {
+                    let seasonNum = dirName.replace(/[^0-9]/g, "");
+                    (seasonNum.length === 1) ? seasonNum = `S0${seasonNum}` : `S${seasonNum}`;
+                    
+                    if(seasonNum !== "") {
+                        const episodeNum = episode.substr(filterStart, 2);
+                        episode = episode.replace(this.stringToRegex(filter), `${seasonNum}E${episodeNum}`);
+                    }
+                } else if(filter === "/^[0-9]{2} - /") {
+                    let seasonNum = dirName.replace(/[^0-9]/g, "");
+                    (seasonNum.length === 1) ? seasonNum = `S0${seasonNum}` : `S${seasonNum}`;
+                    
+                    if(seasonNum !== "") {
+                        const episodeNum = episode.substr(filterStart, 2);
+                        episode = episode.replace(this.stringToRegex(filter), `${seasonNum}E${episodeNum} `);
+                    }
+                } else if(filter === "/^[0-1][0-9]{2}-/") {
+                    let seasonNum = dirName.replace(/[^0-9]/g, "");
+                    (seasonNum.length === 1) ? seasonNum = `S0${seasonNum}` : `S${seasonNum}`;
+                    
+                    if(seasonNum !== "") {
+                        const episodeNum = parseInt(episode.substr(filterStart, 2), 10);
+                        episode = episode.replace(this.stringToRegex(filter), `${seasonNum}E${episodeNum} `);
+                    }
+                } else if(filter === "/^[0-9]{3} /") {
+                    const seasonNum = episode.substr(filterStart, 1);
+                    const episodeNum = episode.substr(filterStart + 1, 2);
+                    episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E${episodeNum}`);
+                } else if(filter === "/[0-9]x[0-9]/i") {
                     const seasonNum = episode.substr(filterStart, 1);
                     const episodeNum = episode.substr(filterStart + 2, 1);
                     episode = episode.replace(this.stringToRegex(filter), `S0${seasonNum}E0${episodeNum}`);
@@ -532,14 +638,18 @@ class recordingsLibrary {
         dir.seriesDetails.lastDirId = this.getLastDirId(dir);
         const seriesName = this.filterSeriesName(dir.seriesDetails.name, dir.prevPathId);
         dir.seriesDetails.name = seriesName;
+        let curSeasonDir = 0;
         
         // Check the series folder for season folders
         if(dir.subFolders.length > 0) {
             let foundSeasons = [];
             
+            // Create a season folder object
             for(const seasonDir of dir.subFolders) {
                 // Set the season folder name
                 let dirName = this.filterSeasonDirName(seasonDir.dirName, foundSeasons);
+                // If no season identifier was found in the name set it as the current name
+                // Otherwise add it to the season array to avoid duplicate seasons
                 (dirName === false) ? dirName = seasonDir.dirName : foundSeasons.push(dirName.replace(/[^0-9]/g, ""));
                 dir.seriesDetails.seasons.push({
                     "dirId": seasonDir.dirId,
@@ -548,47 +658,68 @@ class recordingsLibrary {
                 });
                 
                 // Set the seasons file list
-                let curSeasonNum = dir.seriesDetails.seasons.length - 1;
+                // If the season folder contains all files
+                curSeasonDir = dir.seriesDetails.seasons.length - 1;
                 if(seasonDir.files.length > 0) {
                     for(const file of seasonDir.files) {
                         const idNum = file.idNum;
-                        const fileName = this.filterEpisodeName(file.recordingData.unfilteredFileName, seriesName);
-                        dir.seriesDetails.seasons[curSeasonNum].episodes[idNum] = fileName;
+                        const fileName = this.filterEpisodeName(file.recordingData.unfilteredFileName, seriesName, dirName);
+                        dir.seriesDetails.seasons[curSeasonDir].episodes[idNum] = fileName;
                     }
-                    
-                // If the season directory contains folders instead of files
-                } else if(seasonDir.subFolders.length > 0) {
+                }
+                
+                // If the season directory contains any folders
+                if(seasonDir.subFolders.length > 0) {
                     for(const fileDir of seasonDir.subFolders) {
                     
                         // If each directory contains 1 episode
                         if(fileDir.files.length === 1) {
                             const idNum = fileDir.files[0].idNum;
-                            const fileName = this.filterEpisodeName(fileDir.files[0].recordingData.unfilteredFileName, seriesName);
-                            dir.seriesDetails.seasons[curSeasonNum].episodes[idNum] = fileName;
+                            const fileName = this.filterEpisodeName(fileDir.files[0].recordingData.unfilteredFileName, 
+                                seriesName, dirName);
+                            dir.seriesDetails.seasons[curSeasonDir].episodes[idNum] = fileName;
                         
                         // A directory contains all the episodes
                         } else {
                             if(this.checkSeasonFiles(fileDir.files)) {
                                 for(const file of fileDir.files) {
                                     const idNum = file.idNum;
-                                    const fileName = this.filterEpisodeName(file.recordingData.unfilteredFileName, seriesName);
-                                    dir.seriesDetails.seasons[curSeasonNum].episodes[idNum] = fileName;
+                                    const fileName = this.filterEpisodeName(file.recordingData.unfilteredFileName, 
+                                        seriesName, dirName);
+                                    dir.seriesDetails.seasons[curSeasonDir].episodes[idNum] = fileName;
                                 }
                             }
                         }
                     }
                 }
             }
-        } /*else if(dir.files.length > 0) {
-            dir.seriesDetails.seasons["season 1"] = {};
+        }
+        
+        // If the series folder contains possible episode files
+        if(dir.files.length > 0) {
+            dir.seriesDetails.seasons.push({
+                "dirId": this.numDirectories,
+                "dirName": "Season 1",
+                "episodes": {}
+            });
+            curSeasonDir = dir.seriesDetails.seasons.length - 1;
+            this.numDirectories++;
+            dir.seriesDetails.seasons["Season 1"] = {};
+            
             for(const file of dir.files) {
                 const idNum = file.idNum;
-                dir.seriesDetails.seasons["season 1"][idNum] = file.recordingData.unfilteredFileName;
+                const fileName = this.filterEpisodeName(file.recordingData.unfilteredFileName, seriesName, "Season 1");
+                dir.seriesDetails.seasons[curSeasonDir].episodes[idNum] = fileName;
             }
-        }*/
+        }
         
         console.log(dir);
+        // Skip the dertection past the last sub directory in this series directory
         this.seasonCheckedFolders = dir.seriesDetails.lastDirId;
+    }
+    
+    getFileSeason() {
+        
     }
     
     // Called In:
@@ -641,19 +772,76 @@ class recordingsLibrary {
     checkSeasonFiles(files) {
         // File names with 'part x' should have more than 2 parts to be a series
         let numPartFiles = 0;
+        // Season strings used if the filter [0-9]{4} is matched as additional verification is needed
+        let seasonNum = [];
+        // Episode strings used if the filter ^[0-9]{2}||{3} is matched as additional verification is needed
+        // The numbers are checked to make sure they are sequential it is valid if there are 4 or more
+        // sequential numbers in the folder
+        let digit2episodeNum = null;
+        let sequence2Num = 0;
+        let digit3episodeNum = null;
+        let sequence3Num = 0;
         
         for(const file of files) {
             let fileName = file.recordingData.unfilteredFileName;
             
             for(const fileFilter of this.fileFilters) {
-                if(this.stringToRegex(fileFilter).test(fileName) && !fileFilter.includes("part")) {
+                // Check for file name strings including 'part x'
+                if(this.stringToRegex(fileFilter).test(fileName) && fileFilter.includes("part")) {
+                    if(this.getRecordingYear([fileName]) === false) {
+                        numPartFiles++;
+                    }
+                    
+                // Verify that the string is valid season+episode string
+                } else if(this.stringToRegex(fileFilter).test(fileName) && fileFilter === "/[0-9]{4}/") {
+                    const filterStart = fileName.search(this.stringToRegex(fileFilter));
+                    const seasonStr = fileName.substr(filterStart, 2);
+                    const episodeStr = fileName.substr(filterStart + 2, 2);
+                    const fullStr = fileName.substr(filterStart, 4);
+                    
+                    // Add the season string to the array if it doesn't exist
+                    if(!seasonNum.includes(seasonStr)) {
+                        seasonNum.push(seasonStr);
+                        
+                    // If the season string already exists and it does not match a year string
+                    } else if(seasonNum.includes(seasonStr) && this.getRecordingYear([fullStr]) === false) {
+                        return true;
+                    }
+                    
+                // verify that the string is a valid episode string
+                } else if(this.stringToRegex(fileFilter).test(fileName) && fileFilter === "/^[0-9]{2} /") {
+                    if(this.getRecordingYear([fileName]) === false) {
+                        const episodeStr = parseInt(fileName.substr(0, 2));
+                        if(digit2episodeNum == null) {
+                            digit2episodeNum = episodeStr;
+                            sequence2Num = 1;
+                        } else if(digit2episodeNum - 1 == episodeStr || digit2episodeNum + 1 == episodeStr) {
+                            digit2episodeNum = episodeStr;
+                            sequence2Num++;
+                        }
+                    }
+                    
+                // verify that the string is a valid season+episode string
+                } else if(this.stringToRegex(fileFilter).test(fileName) && fileFilter === "/^[0-9]{3} /") {
+                    if(this.getRecordingYear([fileName]) === false) {
+                        const episodeStr = parseInt(fileName.substr(0, 3));
+                        if(digit3episodeNum == null) {
+                            digit3episodeNum = episodeStr;
+                            sequence3Num = 1;
+                        } else if(digit3episodeNum - 1 == episodeStr || digit3episodeNum + 1 == episodeStr) {
+                            digit3episodeNum = episodeStr;
+                            sequence3Num++;
+                        }
+                    }
+                    
+                } else if(this.stringToRegex(fileFilter).test(fileName) && !fileFilter.includes("part")) {
                     return true;
-                } else if(this.stringToRegex(fileFilter).test(fileName) && fileFilter.includes("part")) {
-                    numPartFiles++;
                 }
             }
         }
-        if(numPartFiles > 2) {
+        // If no other filter match but there are more than 2 'part x' files
+        // If no other filter match but there are more than 4 '^[0-9]{2}||{3} ' files
+        if(numPartFiles > 2 || sequence2Num > 4 || sequence3Num > 4) {
             return true;
         }
         return false;
@@ -839,7 +1027,7 @@ class recordingsLibrary {
     }
     
     // Called From:  this.addRecording()
-    // strArr        An array containg string to search for a year value
+    // strArr        An array containing string/s to search for a year value
     // Function:     Checks if a year(YYYY) string is in the name
     //               Strips all character except aphanumeric and whitespaces
     //               Creates an array from the string and reverses it
