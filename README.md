@@ -67,8 +67,11 @@ On Chrome it will run through all files and add them to the list but it may have
 Bug reported https://github.com/ffmpegwasm/ffmpeg.wasm/issues/144
 
 ## TODO
+* Integrate with NextPVR - WIP
 * Add detection of series and create structured series data that can be used when getting data from an API source - Works on almost all of my series library with a couple of things to add, also need to sort the order of seasons and episodes
 * Implement saving data to IndexedDB - WIP - Now working but incomplete and buggy.
 * Once the data is saved can implement rescanning for files that failed to be read by FFmpeg
 * Grab details file details from other sources as addition/alternative to FFmpeg when it fails - WIP
 * Generate .sh/.bat file to rename physical files with the filtered names
+* Detect corrupt files - WIP
+* Detect missing episodes/sequels
