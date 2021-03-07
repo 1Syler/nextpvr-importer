@@ -1,0 +1,219 @@
+.progress {
+    position: relative;
+    color: black;
+    background: white;
+    height: 25px;
+}
+
+.progress-bar {
+    background: cornflowerblue;
+}
+
+.progress-bar-title {
+    position: absolute;
+    text-align: center;
+    line-height: 25px; /* line-height should be equal to bar height */
+    overflow: hidden;
+    font-weight: bold;
+    right: 0;
+    left: 0;
+    top: 0;
+
+}
+
+.progress-bar-title #file-progress {
+    color: red;
+}
+
+#main-content {
+    background: linear-gradient(45deg, black, transparent);
+}
+
+#options-collapse {
+    text-align: right;
+    color: greenyellow;
+}
+
+#library-collapse {
+    text-align: right;
+    color: greenyellow;
+}
+
+#user-libraries {
+    border-bottom: solid 2px greenyellow;
+}
+
+#input-options {
+    color: darkslategray;
+    border-bottom: solid 2px greenyellow;
+}
+
+#input-options-box {
+    background: gainsboro;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+#user-input input, #user-input button, #user-input select {
+    width: 100%;
+}
+
+#user-input button {
+    font-size: .81rem;
+}
+
+.input-options-header {
+    border-bottom: solid 1px dimgray;
+    font-weight: 600;
+}
+
+#error-message {
+    display: none;
+    color: red;
+}
+
+#progress-indicator, #error-log {
+    display: none;
+}
+
+#recording-editor button {
+    width: 100%;
+    font-size: 13px;
+    padding: .10rem .5rem;
+}
+
+#xml-data span {
+    display: inline;
+}
+
+.series-season-header {
+    font-weight: 700;
+    padding: 10px 10px 10px 0;
+    border-bottom: solid 1px black;
+}
+
+.series-episode-header {
+    padding: 10px 10px 10px 0;
+    margin-left: 10px;
+    border-bottom: dotted 1px slategrey;
+}
+
+@media (min-width: 576px) {
+    #file-modal .modal-dialog {
+        max-width: 60%;
+    }
+}
+
+#file-modal .modal-content {
+    background: transparent;
+    border: none;
+}
+
+.recording-file-ui {
+    background: black;
+    color: white;
+    font-size: 14px;
+    border-radius: 10px;
+    border: 3px solid darkgrey;
+}
+
+/*#user-output {
+}*/
+
+#user-output h4 {
+    margin-bottom: 0;
+    font-size: 1rem;
+}
+
+#openLibrary, #displayLibrary {
+    width: 100%;
+}
+
+#user-output #itemChoices {
+    height: 320px;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#file-title, #series-title, #file-display, #series-display, #dir-btns-left, #dir-btns-right, #file-btns {
+    display: none;
+}
+
+#file-title i, #series-title i {
+    color: #87D3F6;
+}
+
+#file-title i:hover, #series-title i:hover {
+    color: #1D7097;
+    cursor: pointer;
+}
+
+#user-output .panel-group {
+    margin-bottom: 0;
+    border: none;
+}
+
+#user-output .panel-group .panel {
+    border-right: none;
+    border-left: none;
+}
+
+#user-output .panel-group .panel+.panel {
+    margin-top: 0;
+}
+
+#user-output .file-ui-panel {
+    margin-bottom: 1px;
+    border-bottom: none;
+}
+
+#user-output .file-ui-panel .fail-status {
+    margin-bottom: .5rem;
+}
+
+#user-output .panel-default>.panel-heading {
+    color: white;
+    background-color: black;
+    margin-bottom: 1px;
+    padding: 0 15px;
+}
+
+#user-output .panel-default>.panel-heading .badge {
+    margin: 5px 0;
+    /*color: black;*/
+    background-color: #FFE9A2;
+}
+
+#user-output .panel-title>span .adjust-position {
+    position: relative;
+    top: 2px;
+}
+
+#user-output .panel-title>span .adjust-position-arrow {
+    position: relative;
+    top: 5px;
+}
+
+#user-output .adjust-panel-heading {
+    width: 100%;
+    display: inline-block;
+}
+
+#user-output .fa-folder {
+    color: #FFE9A2;
+}
+
+#user-output .panel-body {
+    padding: 0;
+}
+
+#user-output .data-edit {
+    word-wrap: break-word;
+}
+
+#file-display .edit-input {
+    display: none;
+    color: black;"
+}
+
